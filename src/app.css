@@ -21,18 +21,12 @@ background-color: '#06090C';
 }
 
 
-
 @layer utilities {
-  /* Chrome, Safari and Opera */
-  .scrollbar-hidden::-webkit-scrollbar {
-    display: none;
-  }
-
-  .scrollbar-hidden {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
+  .clip-path-corner {
+    clip-path: path('M72 0C72 6.62741 66.6274 12 60 12H32C20.9543 12 12 20.9543 12 32V60C12 66.6274 6.62741 72 0 72H72V0Z');
   }
 }
+
 @layer base {
   @font-face {
     font-family: 'GIP';

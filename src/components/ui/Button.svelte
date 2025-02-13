@@ -1,44 +1,57 @@
-<script>
-  export let variant = 'primary';
-  export let size = 'md';
-  export let leftIcon = null;
-  export let rightIcon = null;
+<!-- Button.svelte -->
+<script lang="ts">
+  import { Isax } from 'isaxvelte';
+  
+  export let type: "button" | "submit" | "reset" = "button";
+  export let variant: "primary" | "secondary" | "outline" = "primary";
+  export let size: "sm" | "md" | "lg" = "md";
   export let disabled = false;
-  export let className = '';
-
-  // Compute classes based on props
-  $: variantClasses = {
-    primary: 'bg-gray-50 hover:bg-gray-100',
-    secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300',
-    outline: 'border-2 border-gray-200 bg-transparent hover:bg-gray-50',
-    text: 'bg-transparent hover:bg-gray-50'
-  }[variant];
-
-  $: sizeClasses = {
-    sm: 'h-8 px-3 py-2 text-btn-32',
-    md: 'h-10 px-5 text-btn-40',
-    lg: 'h-12 px-6 text-btn-48'
-  }[size];
-
-  $: buttonClasses = `
-    inline-flex items-center font-medium rounded-[12px] transition-all duration-200
-    ${variantClasses}
-    ${sizeClasses}
-    ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-    ${className}
-  `;
+  export let leftIcon: string | null = null;  // Changed to accept icon name
+  export let rightIcon: string | null = null; // Changed to accept icon name
+  export let iconType: "bold" | "outline" | "broken" | "bulk" | "linear" | "twotone" = "outline";
+  
+  const sizeClasses = {
+    sm: 'px-4 py-2 text-btn-32',
+		md: 'px-5 py-2 text-btn-40',
+		lg: 'px-6 py-2 text-btn-48'
+  };
+  
+  const iconSizes = {
+    sm: '16px',
+    md: '20px',
+    lg: '24px'
+  };
+  
+  const variantClasses = {
+    primary: 'bg-gray-50 hover:bg-gray-100 text-gray-600',
+		secondary: 'bg-opacity-white4 back backdrop-blur-20 text-gray-50 hover:bg-gray-300',
+		outline: 'border-2 border-opacity-white8 bg-transparent hover:bg-gray-50',
+		text: 'bg-transparent hover:bg-gray-50'
+  };
 </script>
 
 <button
-  class={buttonClasses}
+  {type}
   {disabled}
+  class="inline-flex items-center justify-center gap-2 rounded-[12px] transition-colors 
+    {sizeClasses[size]} {variantClasses[variant]}"
   on:click
 >
   {#if leftIcon}
-    <svelte:component this={leftIcon} />
+    <Isax 
+      name={leftIcon} 
+      type={iconType} 
+      size={iconSizes[size]} 
+    />
   {/if}
-  <slot></slot>
+  
+  <slot />
+  
   {#if rightIcon}
-    <svelte:component this={rightIcon} />
+    <Isax 
+      name={rightIcon} 
+      type={iconType} 
+      size={iconSizes[size]} 
+    />
   {/if}
 </button>

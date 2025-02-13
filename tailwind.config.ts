@@ -8,7 +8,17 @@ export default {
 
 	theme: {
 		extend: {
-      //Colors
+
+      backgroundImage: {
+        'gradient-radial-top': 'radial-gradient(50% 100% at 50% 0%, #0C0F12 0%, #06090C 100%)',
+        'gradient-radial-bottom': 'radial-gradient(50% 100% at 50% 100%, #0C0F12 0%, #06090C 100%)',
+        'gradient-radial-center': 'radial-gradient(50%_50%_at_50%_50%,#000_0%,rgba(0,0,0,0)_100%)', 
+        'work-card': 'linear-gradient(90deg, #0C0F12 0.01%, rgba(12, 15, 18, 0.00) 99.99%)'
+      },
+      boxShadow: {
+        'hover': '0px 0px 40px 0px rgba(205, 205, 205, 0.32)',
+      },
+			//Colors
 			colors: {
 				base: '#212121',
 				gray: {
@@ -25,7 +35,7 @@ export default {
 					white4: 'rgba(255, 255, 255, 0.04)',
 					white8: 'rgba(255, 255, 255, 0.08)',
 					white16: 'rgba(255, 255, 255, 0.16)',
-          300: 'rgba(24, 27, 30, 0.10)',
+					300: 'rgba(24, 27, 30, 0.10)',
 					400: 'rgba(18, 21, 24, 0.30)',
 					500: 'rgba(12, 15, 18, 0.50)',
 					600: 'rgba(6, 9, 12, 0.70)'
@@ -40,32 +50,27 @@ export default {
 				}
 			},
 
-      // Typography
+			// Typography
 			fontFamily: {
 				sans: ['GIP', 'system-ui', 'sans-serif'],
 				heading: ['GIP', 'system-ui', 'sans-serif'],
 				mono: ['JetBrains Mono', 'monospace']
 			},
 			fontWeight: {
-				thin: '100',
-				ultralight: '200',
-				light: '300',
-				normal: '400',
-				medium: '500',
-				semibold: '600',
-				bold: '700',
-				extrabold: '800',
-				black: '900',
-				heavy: '950'
+				normal: '200',
+				medium: '300',
+				semibold: '400',
+				bold: '500'
 			},
 
-      backdropBlur: {
-        8: '8px',
-        16: '16px',
-        24: '24px',
-        40: '40px',
-        120: '120px',
-      },
+			backdropBlur: {
+				8: '8px',
+				16: '16px',
+				24: '24px',
+				40: '40px',
+				60: '60px',
+				120: '120px'
+			},
 
 			fontSize: {
 				// Display
@@ -83,13 +88,27 @@ export default {
 						fontWeight: '500' // bold
 					}
 				],
+        'display-3': [
+          '48px',
+          {
+            lineHeight: '56px',
+            fontWeight: '500' // bold
+          }
+        ],
+        'display-4': [
+          '32px',
+          {
+            lineHeight: '40px',
+            fontWeight: '500', // bold
+          }
+        ],
 
 				//Headings
 				h1: [
 					'40px',
 					{
 						lineHeight: '48px',
-						fontWeight: '700', // bold
+						fontWeight: 600, // bold
 						letterSpacing: '-0.02em'
 					}
 				],
@@ -113,7 +132,7 @@ export default {
 					'28px',
 					{
 						lineHeight: '36px',
-						fontWeight: '700',
+						fontWeight: '600',
 						letterSpacing: '-0.02em'
 					}
 				],
@@ -121,7 +140,7 @@ export default {
 					'24px',
 					{
 						lineHeight: '32px',
-						fontWeight: '700',
+						fontWeight: '600',
 						letterSpacing: '-0.02em'
 					}
 				],
@@ -146,7 +165,7 @@ export default {
 					{
 						lineHeight: '24px',
 						fontWeight: '200',
-            letterSpacing: '0.2px'
+						letterSpacing: '0.2px'
 					}
 				],
 
@@ -169,7 +188,7 @@ export default {
 					'16px',
 					{
 						lineHeight: '20px',
-						fontWeight: '400'
+						fontWeight: '300'
 					}
 				],
 
@@ -184,14 +203,16 @@ export default {
 					'14px',
 					{
 						lineHeight: '18px',
-						fontWeight: '500'
+						fontWeight: '400',
+            letterSpacing: '0.14px',
+            
 					}
 				],
 				'caption-1-regular': [
 					'14px',
 					{
 						lineHeight: '18px',
-						fontWeight: '400'
+						fontWeight: '200'
 					}
 				],
 
@@ -207,7 +228,8 @@ export default {
 					'12px',
 					{
 						lineHeight: '16px',
-						fontWeight: '500'
+						fontWeight: '300',
+            letterSpacing: '0.12px',
 					}
 				],
 				'caption-2-regular': [
@@ -223,22 +245,24 @@ export default {
 					'17px',
 					{
 						lineHeight: '24px',
-						fontWeight: '400' // Semi-Bold
+						letterSpacing: '0.17px',
+						fontWeight: '500' // Semi-Bold
 					}
 				],
 				'btn-40': [
 					'15px',
 					{
 						lineHeight: '24px',
-            letterSpacing: '0.3px',
-						fontWeight: '600' // Semi-Bold
+						letterSpacing: '0.3px',
+						fontWeight: '500' // Semi-Bold
 					}
 				],
 				'btn-32': [
 					'13px',
 					{
 						lineHeight: '16px',
-						fontWeight: '600' // Semi-Bold
+						letterSpacing: '0.13px',
+						fontWeight: '500' // Semi-Bold
 					}
 				],
 
@@ -254,5 +278,5 @@ export default {
 		}
 	},
 
-	plugins: [typography, forms, containerQueries,]
+	plugins: [typography, forms, containerQueries, require('tailwindcss-motion')]
 } satisfies Config;
