@@ -31,6 +31,8 @@
 		"@tailwindcss/typography": "^0.5.15",
 		"gsap": "^3.12.5",
 		"iconsax-svelte": "^0.0.1-alpha.11",
-		"isaxvelte": "^1.0.3"
+		"isaxvelte": "^1.0.3",
+		"svelte-motion": "^0.12.2",
+		"tailwindcss-motion": "^1.0.0"
 	}
 }
