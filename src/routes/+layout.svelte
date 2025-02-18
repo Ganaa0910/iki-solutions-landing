@@ -64,7 +64,7 @@ import { currentProject, projects } from '$lib/store';
 <div class="no-scrollbar no-scrollbar min-h-screen overflow-x-hidden bg-gray-600 text-gray-base">
 	<section class="h-[72px]">
 		<nav
-			class="fixed block left-1/2 z-50 flex w-full max-w-[1440px] -translate-x-1/2 justify-between border-b border-gray-500 bg-opacity-600 px-5 py-5 backdrop-blur-60 md:px-16"
+			class="fixed left-1/2 z-50 flex w-full max-w-[1440px] -translate-x-1/2 justify-between border-b border-gray-500 bg-opacity-600 px-5 py-5 backdrop-blur-60 md:px-16"
 		>
 			<a href="/" draggable="false" class="flex items-center">
 				<img
@@ -406,14 +406,14 @@ import { currentProject, projects } from '$lib/store';
 		fill: #06090c;
 	}
 
-	.x-icon path {
+	/* .x-icon path {
 		fill: #cdcdcd;
 		transition: fill 0.3s;
 	}
 
 	.x-icon:hover path {
 		fill: #06090c;
-	}
+	} */
 
 	.linkedin-icon path {
 		fill: #cdcdcd;
