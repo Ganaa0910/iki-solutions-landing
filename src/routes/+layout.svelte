@@ -230,28 +230,28 @@ let isModalOpen = $state(false);
 				<div class="flex flex-1 justify-between gap-x-4">
 					<div class="flex flex-1 flex-col gap-5 ">
 						<p class="mb-1 text-body-2-bold text-gray-50">Projects</p>
-						<a href="">
+						<a href="/">
 							<p
 								class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 							>
 								Mint Park
 							</p>
 						</a>
-						<a href="">
+						<a href="/">
 							<p
 								class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 							>
 								Lumi
 							</p>
 						</a>
-						<a href="">
+						<a href="/">
 							<p
 								class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 							>
 								Satoshi Punks
 							</p>
 						</a>
-						<a href="">
+						<a href="/">
 							<p
 								class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 							>
@@ -261,14 +261,14 @@ let isModalOpen = $state(false);
 					</div>
 					<div class="flex flex-1 flex-col gap-5 ">
 						<p class="mb-1 text-body-2-bold text-gray-50">Company</p>
-						<a href="">
+						<a href="/">
 							<p
 								class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 							>
 								About us
 							</p>
 						</a>
-						<a href="">
+						<a href="/">
 							<p
 								class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 							>
@@ -280,21 +280,21 @@ let isModalOpen = $state(false);
 
 				<div class="flex flex-1 flex-col gap-5 ">
 					<p class="mb-1 text-body-2-bold text-gray-50">Services</p>
-					<a href="">
+					<a href="/">
 						<p
 							class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 						>
 							Blockchain Development
 						</p>
 					</a>
-					<a href="">
+					<a href="/">
 						<p
 							class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 						>
 							Smart Contracts
 						</p>
 					</a>
-					<a href="">
+					<a href="/">
 						<p
 							class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 						>

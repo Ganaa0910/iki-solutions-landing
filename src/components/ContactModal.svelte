@@ -2,27 +2,75 @@
 <script lang="ts">
   import { fade, scale } from 'svelte/transition';
   import Button from './ui/Button.svelte';
+  import emailjs from '@emailjs/browser';
   
   let { isOpen, onClose } = $props<{
       isOpen: boolean;
       onClose: () => void;
   }>();
 
+
+  const emailServiceId = import.meta.env.EMAILJS_SERVICE_ID
+  const templateId = import.meta.env.EMAILJS_TEMPLATE_ID;
+  const apiKey = import.meta.env.EMAILJS_PUBLIC_KEY
+
   let formData = $state({
-      name: '',
+      firstname: '',
+      lastname:'',
       email: '',
+      companyName: '',
       message: ''
   });
 
+  let isLoading = $state(false);
+  let errorMessage = $state('');
+  let successMessage = $state('');
+
   function closeModal() {
       onClose();
+      // Reset form state
+      errorMessage = '';
+      successMessage = '';
+      formData = {
+          firstname: '',
+          lastname: '',
+          email: '',
+          companyName: '',
+          message: ''
+      };
   }
 
-  function handleSubmit(event: SubmitEvent) {
+  async function handleSubmit(event: SubmitEvent) {
       event.preventDefault();
-      // Handle form submission logic here
-      console.log('Form submitted:', formData);
-      closeModal();
+      isLoading = true;
+      errorMessage = '';
+      successMessage = '';
+
+      try {
+          // Replace these with your EmailJS credentials
+          const templateParams = {
+              to_email: 'itnumadlabs@gmail.com',
+              from_name: `${formData.firstname} ${formData.lastname}`,
+              from_email: formData.email,
+              company_name: formData.companyName,
+              message: formData.message
+          };
+
+          await emailjs.send(
+              'service_o9k723s', // Replace with your EmailJS service ID
+              'template_mkx6l5j', // Replace with your EmailJS template ID
+              templateParams,
+              'RbyP53s9N9RvOlKor' // Replace with your EmailJS public key
+          );
+
+          successMessage = 'Message sent successfully!';
+          setTimeout(closeModal, 2000); // Close modal after 2 seconds
+      } catch (error) {
+          console.error('Failed to send email:', error);
+          errorMessage = 'Failed to send message. Please try again later.';
+      } finally {
+          isLoading = false;
+      }
   }
 </script>
 
@@ -31,14 +79,12 @@
       class="fixed inset-0 z-50 flex items-center justify-center"
       transition:fade={{ duration: 200 }}
   >
-      <!-- Backdrop - using button for accessibility -->
       <button 
           class="modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-sm"
           onclick={closeModal}
           aria-label="Close modal"
       ></button>
       
-      <!-- Modal -->
       <div
           role="dialog"
           aria-labelledby="modal-title"
@@ -60,19 +106,44 @@
               </button>
           </div>
 
+          {#if errorMessage}
+              <div class="mb-4 rounded-md bg-red-100 p-3 text-red-700">
+                  {errorMessage}
+              </div>
+          {/if}
+
+          {#if successMessage}
+              <div class="mb-4 rounded-md bg-green-100 p-3 text-green-700">
+                  {successMessage}
+              </div>
+          {/if}
+
           <form onsubmit={handleSubmit} class="space-y-4">
               <div class="space-y-4">
                   <div>
-                      <label for="name" class="mb-2 block text-sm font-medium text-gray-100">Name</label>
+                      <label for="firstname" class="mb-2 block text-sm font-medium text-gray-100">First Name</label>
                       <input
                           type="text"
-                          id="name"
-                          bind:value={formData.name}
-                          class="w-full rounded-md border border-gray-500 bg-gray-700 p-2 text-gray-base focus:border-teal-300 focus:outline-none"
+                          id="firstname"
+                          bind:value={formData.firstname}
+                          class="w-full rounded-md border border-gray-500 bg-gray-600 p-2 text-gray-base focus:border-gray-50 focus:outline-none"
                           required
                           aria-required="true"
+                          disabled={isLoading}
                       />
                   </div>
+                  <div>
+                    <label for="lastname" class="mb-2 block text-sm font-medium text-gray-100">Last Name</label>
+                    <input
+                        type="text"
+                        id="lastname"
+                        bind:value={formData.lastname}
+                        class="w-full rounded-md border border-gray-500 bg-gray-600 p-2 text-gray-base focus:border-gray-50 focus:outline-none"
+                        required
+                        aria-required="true"
+                        disabled={isLoading}
+                    />
+                </div>
 
                   <div>
                       <label for="email" class="mb-2 block text-sm font-medium text-gray-100">Email</label>
@@ -80,11 +151,25 @@
                           type="email"
                           id="email"
                           bind:value={formData.email}
-                          class="w-full rounded-md border border-gray-500 bg-gray-700 p-2 text-gray-base focus:border-teal-300 focus:outline-none"
+                          class="w-full rounded-md border border-gray-500 bg-gray-600 p-2 text-gray-base focus:border-gray-50 focus:outline-none"
                           required
                           aria-required="true"
+                          disabled={isLoading}
                       />
                   </div>
+
+                  <div>
+                    <label for="companyName" class="mb-2 block text-sm font-medium text-gray-100">Company Name</label>
+                    <input
+                        type="text"
+                        id="companyName"
+                        bind:value={formData.companyName}
+                        class="w-full rounded-md border border-gray-500 bg-gray-600 p-2 text-gray-base focus:border-gray-50 focus:outline-none"
+                        required
+                        aria-required="true"
+                        disabled={isLoading}
+                    />
+                </div>
 
                   <div>
                       <label for="message" class="mb-2 block text-sm font-medium text-gray-100">Message</label>
@@ -92,9 +177,10 @@
                           id="message"
                           bind:value={formData.message}
                           rows="4"
-                          class="w-full rounded-md border border-gray-500 bg-gray-700 p-2 text-gray-base focus:border-teal-300 focus:outline-none"
+                          class="w-full rounded-md border border-gray-500 bg-gray-600 p-2 text-gray-base focus:border-gray-50 focus:outline-none"
                           required
                           aria-required="true"
+                          disabled={isLoading}
                       ></textarea>
                   </div>
               </div>
@@ -104,14 +190,16 @@
                       size="md" 
                       on:click={closeModal}
                       type="button"
+                      disabled={isLoading}
                   >
                       Cancel
                   </Button>
                   <Button 
                       size="md" 
                       type="submit"
+                      disabled={isLoading}
                   >
-                      Send Message
+                      {isLoading ? 'Sending...' : 'Send Message'}
                   </Button>
               </div>
           </form>

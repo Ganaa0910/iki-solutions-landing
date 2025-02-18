@@ -51,7 +51,7 @@
 							<div
 								class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
 							>
-								<a href="/id" on:click|preventDefault={() => navigateToProject(projects.mintpark)}>
+								<a href="/id" onclick={() => navigateToProject(projects.mintpark)}>
 									<div
 										class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
 									>
@@ -61,7 +61,7 @@
 							</div>
 						</div>
 						<div class="flex flex-col gap-3">
-							<a href="/id" on:click|preventDefault={() => navigateToProject(projects.mintpark)}>
+							<a href="/id" onclick={() => navigateToProject(projects.mintpark)}>
 								<p class="text-h5 text-gray-50">Mint Park</p>
 							</a>
 							<p class="self-stretch text-caption-1-regular text-gray-100">
@@ -107,7 +107,7 @@
 							<div
 								class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
 							>
-								<a href="/id" on:click|preventDefault={() => navigateToProject(projects.lumi)}>
+								<a href="/id" onclick={() => navigateToProject(projects.lumi)}>
 									<div
 										class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
 									>
@@ -117,7 +117,7 @@
 							</div>
 						</div>
 						<div class="flex flex-col gap-3">
-              <a href="/id" on:click|preventDefault={() => navigateToProject(projects.lumi)}>
+              <a href="/id" onclick={() => navigateToProject(projects.lumi)}>
 							<p class="text-h5 text-gray-50">Lumi</p>
               </a>
 							<p class="self-stretch text-caption-1-regular text-gray-100">
@@ -159,7 +159,7 @@
 							<div
 								class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
 							>
-								<a href="/id" on:click|preventDefault={() => navigateToProject(projects.pepepunks)}>
+								<a href="/id" onclick={() => navigateToProject(projects.pepepunks)}>
 									<div
 										class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
 									>
@@ -169,7 +169,7 @@
 							</div>
 						</div>
 						<div class="flex flex-col gap-3">
-              <a href="/id" on:click|preventDefault={() => navigateToProject(projects.pepepunks)}>
+              <a href="/id" onclick={() => navigateToProject(projects.pepepunks)}>
 							<p class="text-h5 text-gray-50">Pepe Punks</p>
               </a>
 							<p class="self-stretch text-caption-1-regular text-gray-100">
@@ -217,7 +217,7 @@
 							>
 								<a
 									href="/id"
-									on:click|preventDefault={() => navigateToProject(projects.satoshipunks)}
+									onclick={() => navigateToProject(projects.satoshipunks)}
 								>
 									<div
 										class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
@@ -230,7 +230,7 @@
 						<div class="flex flex-col gap-3">
               <a
               href="/id"
-              on:click|preventDefault={() => navigateToProject(projects.satoshipunks)}
+              onclick={() => navigateToProject(projects.satoshipunks)}
             >
 							<p class="text-h5 text-gray-50">Satoshi Punks</p>
               </a>
@@ -281,7 +281,7 @@
 							<div
 								class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
 							>
-								<a href="/id" on:click|preventDefault={() => navigateToProject(projects.shapetown)}>
+								<a href="/id" onclick={() => navigateToProject(projects.shapetown)}>
 									<div
 										class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
 									>
@@ -292,7 +292,7 @@
 						</div>
 
 						<div class="flex flex-col gap-3">
-              <a href="/id" on:click|preventDefault={() => navigateToProject(projects.shapetown)}>
+              <a href="/id" onclick={() => navigateToProject(projects.shapetown)}>
 							<p class="text-h5 text-gray-50">Shape Town</p>
               </a>
 							<p class="self-stretch text-caption-1-regular text-gray-100">
@@ -339,7 +339,7 @@
 							<div
 								class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
 							>
-								<a href="/id" on:click|preventDefault={() => navigateToProject(projects.araafal)}>
+								<a href="/id" onclick={() => navigateToProject(projects.araafal)}>
 									<div
 										class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
 									>
@@ -349,7 +349,7 @@
 							</div>
 						</div>
 						<div class="flex flex-col gap-3">
-							<a href="/id" on:click|preventDefault={() => navigateToProject(projects.araafal)}>
+							<a href="/id" onclick={() => navigateToProject(projects.araafal)}>
 								<p class="text-h5 text-gray-50">Araafal</p>
 							</a>
 							<p class="self-stretch text-caption-1-regular text-gray-100">

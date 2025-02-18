@@ -89,7 +89,7 @@ export default {
 					}
 				],
         'display-3': [
-          '48px',
+          '40px',
           {
             lineHeight: '56px',
             fontWeight: '500' // bold

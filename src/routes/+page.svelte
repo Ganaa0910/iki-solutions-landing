@@ -4,8 +4,75 @@
 	import { goto } from '$app/navigation';
 	import type { Project } from '$lib/types';
 	import Button from '../components/ui/Button.svelte';
+  import ContactModal from '../components/ContactModal.svelte';
 
+  import { onMount, onDestroy } from 'svelte';
 	let textContainer: HTMLElement;
+  import gsap from 'gsap';
+
+
+  // const wordAnimation = () => {
+  //   const words = ['Building', 'Developing', 'Designing'];
+  //   for(i, words.length,) 
+    
+  // }
+  // let currentWordIndex = 0;
+  // const words = ['Building', 'Developing', 'Designing'];
+  // let displayWord = words[currentWordIndex];
+
+  // function cycleWords() {
+  //   currentWordIndex = (currentWordIndex + 1) % words.length;
+  //   displayWord = words[currentWordIndex];
+  // }
+
+  // // Start cycling every 3 seconds
+  // setInterval(cycleWords, 3000);
+  
+  let isModalOpen = $state(false);
+  let displayWord = $state('')
+  let wordElement: HTMLSpanElement;
+  let currentWordIndex = 0;
+  const words = ['Building', 'Developing', 'Designing'];
+  displayWord = words[currentWordIndex];
+  let interval: ReturnType<typeof setInterval>;
+    let tl: GSAPTimeline;
+
+
+
+
+  function animateWord() {
+    tl = gsap.timeline();
+    tl.to(wordElement, {
+      opacity: 0,
+      y: -50,
+      duration: 0.3,
+      ease: "expo.in",
+      onComplete: () => {
+        currentWordIndex = (currentWordIndex + 1) % words.length;
+        displayWord = words[currentWordIndex];
+      }
+    });
+
+    tl.to(wordElement, {
+      opacity: 1,
+      y: 0,
+      duration: 0.3,
+      ease: "expo.out"
+    });
+  }
+
+  onMount(() => {
+    // Set initial state
+    gsap.set(wordElement, { opacity: 1, y: 0 });
+    
+    // Start the interval
+    interval = setInterval(animateWord, 3000);
+  });
+
+  onDestroy(() => {
+    if (interval) clearInterval(interval);
+    if (tl) tl.kill();
+  });
 
 	interface ServiceCardProps {
 		icon: string;
@@ -21,7 +88,11 @@
 		goto('/id');
 	};
 
-	export let cards: ServiceCardProps[] = [
+  function handleCloseModal() {
+    isModalOpen = false;
+}
+
+	let cards: ServiceCardProps[] = [
 		{
 			icon: 'mobileprogramming',
 			title: 'Mobile Application Development',
@@ -84,7 +155,7 @@
 		}
 	];
 
-	const words = ['Building', 'Developing', 'Designing'];
+
 	const tags = [
 		'Decentralized Finance',
 		'Smart Contract',
@@ -116,6 +187,7 @@
 </style>
 
 <div class="scrol no-scrollbar flex w-full justify-center overflow-hidden">
+ 
 	<img
 		src="/Pattern.svg"
 		alt=""
@@ -124,16 +196,22 @@
 	/>
 	<div class="z-10 mt-16 flex flex-col justify-between gap-8">
 		<div class="mb-16 flex flex-col md:flex-row">
-			<div class="flex-1 items-start">
-				<div class="text-[40px] font-bold leading-[4px] md:text-display-2 text-gray-base">
-					<div class="word-container" bind:this={textContainer}>
-						{#each words as word}
-							<p class="word">{word}</p>
-						{/each}
-					</div>
-					<p class="mt-16">with trust and passion</p>
-				</div>
-			</div>
+      <div class="flex-1 items-start">
+        <div class="font-bold text-4xl md:text-display-2 text-gray-base">
+          <div class="flex flex-wrap items-center gap-2 md:gap-3" bind:this={textContainer}>
+            <span
+              bind:this={wordElement}
+              class="inline-block font-bold text-display-3 md:text-display-2 text-gray-base"
+            >
+              {displayWord}
+            </span>
+            <span class=" text-display-3 md:text-display-2 font-bold text-gray-base">with</span>
+          </div>
+          <div class="mt-4 md:mt-4 text-display-3 md:text-display-2 font-bold text-gray-base">
+            trust and passion
+          </div>
+        </div>
+      </div>
 			<div class="flex-1 items-center justify-center py-8">
 				<p class="text-body-2-regular md:text-body-1-regular text-gray-50">
 					Your trusted partner in Web3 innovation. Numad Labs blends deep blockchain expertise and exceptional craftsmanship to bring your decentralized vision to life.
@@ -296,7 +374,7 @@
           <div
             class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
           >
-            <a href="/id" on:click|preventDefault={() => navigateToProject(projects.mintpark)}>
+            <a href="/id" onclick={() => navigateToProject(projects.mintpark)}>
               <div
                 class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
               >
@@ -347,7 +425,7 @@
           <div
             class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
           >
-            <a href="/id" on:click|preventDefault={() => navigateToProject(projects.lumi)}>
+            <a href="/id" onclick={() => navigateToProject(projects.lumi)}>
               <div
                 class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
               >
@@ -384,7 +462,7 @@
       >
         <div class="relative h-[240px] w-full md:h-[416px]">
           <img
-            src="/Pepe-Punks.png"
+            src="/PepePunks.png"
             alt="Mintpark"
             draggable="false"
             class="h-[240px] w-full self-stretch rounded-lg bg-contain md:h-[416px]"
@@ -395,7 +473,7 @@
           <div
             class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
           >
-            <a href="/id" on:click|preventDefault={() => navigateToProject(projects.pepepunks)}>
+            <a href="/id" onclick={() => navigateToProject(projects.pepepunks)}>
               <div
                 class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
               >
@@ -435,7 +513,7 @@
       >
         <div class="relative h-[240px] w-full md:h-[416px]">
           <img
-            src="/Satoshi-Punks.webp"
+            src="/SatoshiPunks.webp"
             alt="Mintpark"
             draggable="false"
             class="h-[240px] w-full self-stretch rounded-lg bg-cover md:h-[416px]"
@@ -448,7 +526,7 @@
           >
             <a
               href="/id"
-              on:click|preventDefault={() => navigateToProject(projects.satoshipunks)}
+              onclick={() => navigateToProject(projects.satoshipunks)}
             >
               <div
                 class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
@@ -503,19 +581,20 @@
   
  
   </div>
+  <div class="flex flex-col xl:hidden mt-[240px]">
+    <img src="/Get-in-touch.png" alt="visual" class="w-full" />
+    <div class="mt-6 flex flex-col items-center gap-4">
+      <p class="text-center text-h4 text-white">Let's Make Ideas Happen!</p>
+      <p class="text-center text-caption-1-medium text-gray-100">
+        Share your vision, and we'll bring it to life with innovation, passion, and expertise.
+        Let's start something extraordinary together!
+      </p>
+      <Button size="md" on:click={() => isModalOpen = true}>Let's work together!</Button>
+    </div>
+  </div>
   <div class="flex flex-col items-center mt-[240px] gap-6 px-5 py-6 w-[1440px]">
     <!-- Mobile Layout -->
-    <div class="flex flex-col xl:hidden">
-      <img src="/Get-in-touch.png" alt="visual" class="w-full" />
-      <div class="mt-6 flex flex-col items-center gap-4">
-        <p class="text-center text-h4 text-white">Let's Make Ideas Happen!</p>
-        <p class="text-center text-caption-1-medium text-gray-100">
-          Share your vision, and we'll bring it to life with innovation, passion, and expertise.
-          Let's start something extraordinary together!
-        </p>
-        <Button>Let's work together!</Button>
-      </div>
-    </div>
+
 
     <!-- Desktop Layout -->
     <div class="hidden xl:block w-[1440px]">
@@ -613,3 +692,7 @@
       </div>
       </div>
   </div>
+  <ContactModal 
+  isOpen={isModalOpen} 
+  onClose={handleCloseModal}
+/>
