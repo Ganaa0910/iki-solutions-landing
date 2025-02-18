@@ -93,7 +93,13 @@
           transition:scale={{ duration: 200, start: 0.95 }}
       >
           <div class="mb-4 flex items-center justify-between">
-              <h2 id="modal-title" class="text-xl font-bold text-gray-base">Get in Touch</h2>
+            <div class=""
+            >
+            <h2 id="modal-title" class="text-xl font-bold text-gray-base">What’s your idea?</h2>
+            <p class=" text-gray-100 text-body-2-regular">Have a groundbreaking idea or a project in mind? We're here to collaborate and make it a reality. Reach out to us and let's start building together!</p>
+          </div>
+             
+
               <button 
                   type="button"
                   class="text-gray-200 hover:text-gray-100"

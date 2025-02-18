@@ -1,6 +1,12 @@
 <script lang="ts">
+	import ContactModal from '../../components/ContactModal.svelte';
 	import Button from '../../components/ui/Button.svelte';
 	import { Isax } from 'isaxvelte';
+
+  let isModalOpen = $state(false);
+  function handleCloseModal() {
+    isModalOpen = false;
+}
 </script>
 
 <div class="mx-auto max-w-[1440px]">
@@ -120,7 +126,7 @@
 						Share your vision, and we'll bring it to life with innovation, passion, and expertise.
 						Let's start something extraordinary together!
 					</p>
-					<Button>Let's work together!</Button>
+          <Button size="md" on:click={() => isModalOpen = true}>Let's work together!</Button>
 				</div>
 			</div>
 
@@ -214,7 +220,7 @@
 						</p>
 						<div class="">
 
-							<Button variant="primary">Let's work together!</Button>
+              <Button size="md" on:click={() => isModalOpen = true}>Let's work together!</Button>
 						</div>
 					</div>
 				</div>
@@ -222,3 +228,9 @@
 		</div>
 	</div>
 </div>
+
+<ContactModal 
+isOpen={isModalOpen} 
+onClose={handleCloseModal}
+/>
+
