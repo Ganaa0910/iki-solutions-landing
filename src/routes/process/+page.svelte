@@ -24,6 +24,8 @@
 			</h1>
 			<p class="z-10 text-center text-body-2-regular text-gray-100 md:text-body-1-regular">
 				Discover the journey behind every innovative blockchain solution we deliver.
+
+        
 			</p>
 		</div>
 		<img
