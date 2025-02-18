@@ -64,6 +64,7 @@
 					Next Project
 				</Button>
 			</div>
+      
 		</div>
 	</div>
 {/if}
