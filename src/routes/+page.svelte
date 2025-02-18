@@ -666,7 +666,7 @@
             Let's start something extraordinary together!
           </p>
           <div class="">
-            <Button variant="primary">Let's work together!</Button>
+            <Button size="md" on:click={() => isModalOpen = true}>Let's work together!</Button>
           </div>
         </div>
 
