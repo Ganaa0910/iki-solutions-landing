@@ -64,8 +64,7 @@
 				</div>
 				<p class="text-h4 text-gray-50">Forge</p>
 				<p class="text-body-2-regular text-gray-100">
-					We ignite the journey with bold ideas and comprehensive planning, transforming
-					possibilities into actionable goals.
+          Through cutting-edge development, we forge secure, innovative blockchain solutions tailored to your needs.
 				</p>
 			</div>
 		</div>
@@ -85,8 +84,7 @@
 				</div>
 				<p class="text-h4 text-gray-50">Elevate</p>
 				<p class="text-body-2-regular text-gray-100">
-					We ignite the journey with bold ideas and comprehensive planning, transforming
-					possibilities into actionable goals.
+          Seamlessly elevate your systems with scalable integrations and optimized performance.
 				</p>
 			</div>
 		</div>
@@ -106,8 +104,7 @@
 				</div>
 				<p class="text-h4 text-gray-50">Thrive</p>
 				<p class="text-body-2-regular text-gray-100">
-					We ignite the journey with bold ideas and comprehensive planning, transforming
-					possibilities into actionable goals.
+					Delivering solutions that empower your success, with ongoing support to ensure you thrive in the digital era.
 				</p>
 			</div>
 		</div>

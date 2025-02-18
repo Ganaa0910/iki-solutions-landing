@@ -8,6 +8,15 @@
 	import { onMount } from 'svelte';
 let isModalOpen = $state(false);
 
+import { currentProject, projects } from '$lib/store';
+	import { goto } from '$app/navigation';
+	import type { Project } from '$lib/types';
+
+	const navigateToProject = (projectData: Project) => {
+		currentProject.set(projectData);
+		goto('/id');
+	};
+
 	let { children } = $props();
 	const navItems = [
 		{ href: '/services', text: 'Services' },
@@ -230,28 +239,28 @@ let isModalOpen = $state(false);
 				<div class="flex flex-1 justify-between gap-x-4">
 					<div class="flex flex-1 flex-col gap-5 ">
 						<p class="mb-1 text-body-2-bold text-gray-50">Projects</p>
-						<a href="/">
+            <a href="/id" onclick={() => navigateToProject(projects.mintpark)}>
 							<p
 								class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 							>
 								Mint Park
 							</p>
 						</a>
-						<a href="/">
+            <a href="/id" onclick={() => navigateToProject(projects.lumi)}>
 							<p
 								class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 							>
 								Lumi
 							</p>
 						</a>
-						<a href="/">
+            <a href="/id" onclick={() => navigateToProject(projects.satoshipunks)}>
 							<p
 								class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 							>
 								Satoshi Punks
 							</p>
 						</a>
-						<a href="/">
+            <a href="/id" onclick={() => navigateToProject(projects.pepepunks)}>
 							<p
 								class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 							>
@@ -261,14 +270,14 @@ let isModalOpen = $state(false);
 					</div>
 					<div class="flex flex-1 flex-col gap-5 ">
 						<p class="mb-1 text-body-2-bold text-gray-50">Company</p>
-						<a href="/">
+						<a href="/team">
 							<p
 								class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 							>
 								About us
 							</p>
 						</a>
-						<a href="/">
+						<a href="/process">
 							<p
 								class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 							>
@@ -280,21 +289,21 @@ let isModalOpen = $state(false);
 
 				<div class="flex flex-1 flex-col gap-5 ">
 					<p class="mb-1 text-body-2-bold text-gray-50">Services</p>
-					<a href="/">
+					<a href="/services">
 						<p
 							class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 						>
 							Blockchain Development
 						</p>
 					</a>
-					<a href="/">
+					<a href="/services">
 						<p
 							class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 						>
 							Smart Contracts
 						</p>
 					</a>
-					<a href="/">
+          <a href="/services">
 						<p
 							class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 						>
@@ -308,7 +317,7 @@ let isModalOpen = $state(false);
 		<!-- Copyright and Social buttons -->
 		<div class="flex flex-col justify-between gap-y-8 pt-8 md:flex-row-reverse md:items-center">
 			<div class="flex justify-between gap-x-4">
-				<div
+				<!-- <div
 					class="x-icon hover:shadow-hover flex flex-1 items-center justify-center gap-[10px] rounded-[8px] bg-opacity-white4 p-3 transition-all duration-300 hover:bg-gray-50"
 				>
 					<svg
@@ -322,10 +331,13 @@ let isModalOpen = $state(false);
 							d="M1.65467 1.68848L8.51847 10.866L1.61133 18.3278H3.16585L9.21304 11.7949L14.099 18.3278H19.3891L12.1391 8.63399L18.5682 1.68848H17.0137L11.4445 7.70512L6.94477 1.68848H1.65467ZM3.94071 2.83354H6.37099L17.1027 17.1825H14.6724L3.94071 2.83354Z"
 						/>
 					</svg>
-				</div>
+				</div> -->
+        
+ 
 				<div
 					class="linkedin-icon hover:shadow-hover flex flex-1 items-center justify-center gap-[10px] rounded-[8px] bg-opacity-white4 p-3 transition-all duration-300 hover:bg-gray-50"
 				>
+        <a href="https://www.linkedin.com/company/numadlabs" aria-label="20">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="21"
@@ -344,11 +356,16 @@ let isModalOpen = $state(false);
 							d="M7.59961 18.6094H11.4142V12.2003C11.4142 11.8573 11.439 11.5146 11.5397 11.2694C11.8155 10.5841 12.4432 9.87429 13.497 9.87429C14.8773 9.87429 15.4295 10.9267 15.4295 12.4696V18.6094H19.2438V12.0288C19.2438 8.50363 17.3619 6.86332 14.8521 6.86332C12.7942 6.86332 11.8908 8.01358 11.3889 8.79705H11.4143V7.13263H7.59971C7.64977 8.20953 7.59961 18.6094 7.59961 18.6094Z"
 						/>
 					</svg>
+        </a>
 				</div>
+
+     
 
 				<div
 					class="github-icon hover:shadow-hover flex flex-1 items-center justify-center gap-[10px] rounded-[8px] bg-opacity-white4 p-3 transition-all duration-300 hover:bg-gray-50"
 				>
+        <a href="https://github.com/numadlabs" aria-label="20">
+ 
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="21"
@@ -362,6 +379,7 @@ let isModalOpen = $state(false);
 							d="M10.5052 1.25C5.58066 1.25 1.59961 5.2604 1.59961 10.2218C1.59961 14.1877 4.15041 17.5448 7.68904 18.733C8.13146 18.8223 8.29351 18.5399 8.29351 18.3024C8.29351 18.0944 8.27893 17.3815 8.27893 16.6386C5.8016 17.1735 5.28571 15.5691 5.28571 15.5691C4.88759 14.5293 4.2977 14.2621 4.2977 14.2621C3.48687 13.7125 4.35676 13.7125 4.35676 13.7125C5.25618 13.7719 5.72813 14.6334 5.72813 14.6334C6.5242 15.9999 7.80698 15.6138 8.32304 15.3761C8.39669 14.7968 8.63276 14.3957 8.88341 14.173C6.90756 13.965 4.82871 13.1926 4.82871 9.7464C4.82871 8.76604 5.18236 7.96396 5.74272 7.34016C5.65431 7.1174 5.34459 6.19628 5.83131 4.96345C5.83131 4.96345 6.58326 4.72574 8.27875 5.88438C9.00465 5.68799 9.75325 5.58809 10.5052 5.58725C11.2572 5.58725 12.0237 5.69134 12.7316 5.88438C14.4272 4.72574 15.1792 4.96345 15.1792 4.96345C15.6659 6.19628 15.356 7.1174 15.2676 7.34016C15.8427 7.96396 16.1818 8.76604 16.1818 9.7464C16.1818 13.1926 14.1029 13.95 12.1123 14.173C12.4368 14.4552 12.7168 14.9898 12.7168 15.8366C12.7168 17.0397 12.7022 18.0053 12.7022 18.3022C12.7022 18.5399 12.8645 18.8223 13.3067 18.7332C16.8453 17.5446 19.3961 14.1877 19.3961 10.2218C19.4107 5.2604 15.4151 1.25 10.5052 1.25Z"
 						/>
 					</svg>
+        </a>
 				</div>
 			</div>
 			<div class="flex justify-start">
