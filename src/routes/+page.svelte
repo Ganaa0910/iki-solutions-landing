@@ -9,25 +9,6 @@
   import { onMount, onDestroy } from 'svelte';
 	let textContainer: HTMLElement;
   import gsap from 'gsap';
-
-
-  // const wordAnimation = () => {
-  //   const words = ['Building', 'Developing', 'Designing'];
-  //   for(i, words.length,) 
-    
-  // }
-  // let currentWordIndex = 0;
-  // const words = ['Building', 'Developing', 'Designing'];
-  // let displayWord = words[currentWordIndex];
-
-  // function cycleWords() {
-  //   currentWordIndex = (currentWordIndex + 1) % words.length;
-  //   displayWord = words[currentWordIndex];
-  // }
-
-  // // Start cycling every 3 seconds
-  // setInterval(cycleWords, 3000);
-  
   let isModalOpen = $state(false);
   let displayWord = $state('')
   let wordElement: HTMLSpanElement;
