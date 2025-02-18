@@ -1,14 +1,41 @@
 <script lang="ts">
-	import { currentProject } from '$lib/store';
+	import { currentProject, projects } from '$lib/store';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import Button from '../../components/ui/Button.svelte';
+
 
 	onMount(() => {
 		if (!$currentProject) {
 			goto('/');
 		}
 	});
+
+	// Function to handle navigation to next project
+	function handleNextProject() {
+		if ($currentProject) {
+			// Get all project keys
+			const projectKeys = Object.keys(projects);
+			
+			// Find current project key
+			const currentKey = projectKeys.find(key => 
+				projects[key].title === $currentProject.title
+			);
+			
+			if (currentKey) {
+				// Get index of current project
+				const currentIndex = projectKeys.indexOf(currentKey);
+				// Get next project key (loop back to start if at end)
+				const nextKey = projectKeys[(currentIndex + 1) % projectKeys.length];
+				
+				// Update current project and navigate
+				currentProject.set(projects[nextKey]);
+				goto(`/${nextKey}`);
+			}
+		}
+	}
+
+  
 </script>
 
 {#if $currentProject}
@@ -60,9 +87,15 @@
 				{$currentProject.description2}
 			</p>
 			<div class="flex flex-col gap-4">
-				<Button rightIcon="arrowright" variant="secondary" size="sm" iconType="linear">
-					Next Project
-				</Button>
+        <Button 
+				rightIcon="arrowright" 
+				variant="secondary" 
+				size="sm" 
+				iconType="linear"
+				on:click={handleNextProject}
+			>
+				Next Project
+			</Button>
 			</div>
 		</div>
 	</div>

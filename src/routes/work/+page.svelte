@@ -130,13 +130,18 @@
 							<div
 								class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
 							>
-								<p class="text-caption-2-medium text-gray-50">Restaurant Royalty Platform</p>
+								<p class="text-caption-2-medium text-gray-50">Social Media</p>
 							</div>
 							<div
 								class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
 							>
-								<p class="text-caption-2-medium text-gray-50">Mobile App</p>
+								<p class="text-caption-2-medium text-gray-50">Restaurant Loyalty</p>
 							</div>
+              <div
+              class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
+            >
+              <p class="text-caption-2-medium text-gray-50">EVM</p>
+            </div>
 						</div>
 					</div>
 				</div>
@@ -251,7 +256,7 @@
 							<div
 								class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
 							>
-								<p class="text-caption-2-medium text-gray-50">Earliest Collection on BTC</p>
+								<p class="text-caption-2-medium text-gray-50">Sub100k Ordinal</p>
 							</div>
 							<div
 								class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
@@ -307,17 +312,12 @@
 							<div
 								class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
 							>
-								<p class="text-caption-2-medium text-gray-50">Cross-Chain Marketplace</p>
+								<p class="text-caption-2-medium text-gray-50">Play 2 Earn</p>
 							</div>
 							<div
 								class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
 							>
-								<p class="text-caption-2-medium text-gray-50">CaaS</p>
-							</div>
-							<div
-								class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
-							>
-								<p class="text-caption-2-medium text-gray-50">Creator Program</p>
+								<p class="text-caption-2-medium text-gray-50">Phaser</p>
 							</div>
 						</div>
 					</div>
@@ -363,13 +363,18 @@
 							<div
 								class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
 							>
-								<p class="text-caption-2-medium text-gray-50">Restaurant Royalty Platform</p>
+								<p class="text-caption-2-medium text-gray-50">Ordinals</p>
 							</div>
 							<div
 								class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
 							>
-								<p class="text-caption-2-medium text-gray-50">Mobile App</p>
+								<p class="text-caption-2-medium text-gray-50">BRC20</p>
 							</div>
+              <div
+              class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
+            >
+              <p class="text-caption-2-medium text-gray-50">Bitcoin Mainnet</p>
+            </div>
 						</div>
 					</div>
 				</div>
