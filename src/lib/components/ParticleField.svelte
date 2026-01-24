@@ -19,6 +19,18 @@
 		pulseSpeed: number;
 	}
 
+	interface ShootingStar {
+		x: number;
+		y: number;
+		vx: number;
+		vy: number;
+		size: number;
+		opacity: number;
+		tailLength: number;
+		life: number;
+		maxLife: number;
+	}
+
 	// Blob paths for morphing
 	const blobPaths = {
 		blob1: [
@@ -46,9 +58,12 @@
 		if (!ctx) return;
 
 		let particles: Particle[] = [];
+		let shootingStars: ShootingStar[] = [];
 		const particleCount = 80;
 		let mouseX = 0;
 		let mouseY = 0;
+		let lastShootingStarTime = 0;
+		const shootingStarInterval = 6000; // Spawn every 6-12 seconds - rare
 
 		function resize() {
 			canvas.width = window.innerWidth;
@@ -70,6 +85,84 @@
 					pulseSpeed: Math.random() * 0.02 + 0.01
 				});
 			}
+		}
+
+		function spawnShootingStar() {
+			// Random angle between 25-55 degrees (diagonal streaks)
+			const angle = (Math.random() * 30 + 25) * (Math.PI / 180);
+			const speed = Math.random() * 4 + 10; // Slower streak
+
+			// Spawn from top edge mostly
+			const startX = Math.random() * canvas.width * 0.8;
+			const startY = -20;
+
+			shootingStars.push({
+				x: startX,
+				y: startY,
+				vx: Math.cos(angle) * speed,
+				vy: Math.sin(angle) * speed,
+				size: Math.random() * 1 + 1.5, // Bolder
+				opacity: 0,
+				tailLength: Math.random() * 8 + 12, // Shorter
+				life: 0,
+				maxLife: 60
+			});
+		}
+
+		function drawShootingStars() {
+			const now = performance.now();
+
+			// Spawn new shooting star randomly
+			if (now - lastShootingStarTime > shootingStarInterval + Math.random() * 6000) {
+				spawnShootingStar();
+				lastShootingStarTime = now;
+			}
+
+			shootingStars = shootingStars.filter((star) => {
+				star.life++;
+
+				// Quick fade in, fade out at end
+				const fadeIn = Math.min(star.life / 5, 1);
+				const fadeOut = Math.max(0, 1 - (star.life - star.maxLife + 15) / 15);
+				star.opacity = fadeIn * fadeOut * 0.6;
+
+				// Update position
+				star.x += star.vx;
+				star.y += star.vy;
+
+				// Draw subtle tail
+				const tailX = star.x - (star.vx / Math.sqrt(star.vx ** 2 + star.vy ** 2)) * star.tailLength;
+				const tailY = star.y - (star.vy / Math.sqrt(star.vx ** 2 + star.vy ** 2)) * star.tailLength;
+
+				const gradient = ctx.createLinearGradient(tailX, tailY, star.x, star.y);
+				gradient.addColorStop(0, 'rgba(200, 200, 205, 0)');
+				gradient.addColorStop(1, `rgba(220, 220, 225, ${star.opacity})`);
+
+				ctx.beginPath();
+				ctx.moveTo(tailX, tailY);
+				ctx.lineTo(star.x, star.y);
+				ctx.strokeStyle = gradient;
+				ctx.lineWidth = star.size;
+				ctx.lineCap = 'round';
+				ctx.stroke();
+
+				// Tiny head glow
+				const headGlow = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.size * 2);
+				headGlow.addColorStop(0, `rgba(255, 255, 255, ${star.opacity * 0.8})`);
+				headGlow.addColorStop(1, 'rgba(220, 220, 225, 0)');
+
+				ctx.beginPath();
+				ctx.arc(star.x, star.y, star.size * 2, 0, Math.PI * 2);
+				ctx.fillStyle = headGlow;
+				ctx.fill();
+
+				// Keep if still alive and on screen
+				return (
+					star.life < star.maxLife &&
+					star.x < canvas.width + 50 &&
+					star.y < canvas.height + 50
+				);
+			});
 		}
 
 		function animateParticles() {
@@ -139,6 +232,9 @@
 					}
 				});
 			});
+
+			// Draw shooting stars
+			drawShootingStars();
 
 			animationId = requestAnimationFrame(animateParticles);
 		}

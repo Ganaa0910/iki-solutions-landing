@@ -38,24 +38,25 @@ const teamMembers = [
 ] as const;
 </script>
 
-<div class="mt-[60px] flex flex-col gap-10">
-  <div class="flex flex-col items-center justify-between md:flex-row">
-      <div class="flex flex-col gap-6 md:w-[528px]">
-          <p class="self-stretch text-display-4 text-gray-50 md:text-display-2">
-              Meet the Team Behind iki.studio
-          </p>
-          <p class="mb-16 self-stretch text-body-2-regular text-gray-100 md:text-body-1-regular">
-              Creative technologists crafting exceptional digital experiences.
-          </p>
-      </div>
-      <div class="flex w-[640px] justify-center overflow-hidden rounded-[12px]">
-          <img
-              src="/Family.png"
-              alt="Family"
-              class="h-auto w-[335px] rounded-3xl md:h-[400px] md:w-[640px]"
-          />
-      </div>
-  </div>
+<div class="mx-auto w-full max-w-[1440px] px-5 md:px-16">
+  <div class="mt-[60px] flex flex-col gap-10">
+    <div class="flex flex-col items-center justify-between gap-8 md:flex-row">
+        <div class="flex flex-col gap-6 md:w-[528px]">
+            <p class="self-stretch text-display-4 text-gray-50 md:text-display-2">
+                Meet the Team Behind iki.studio
+            </p>
+            <p class="mb-16 self-stretch text-body-2-regular text-gray-100 md:text-body-1-regular">
+                Creative technologists crafting exceptional digital experiences.
+            </p>
+        </div>
+        <div class="flex w-full max-w-[640px] justify-center overflow-hidden rounded-[12px]">
+            <img
+                src="/Family.png"
+                alt="Family"
+                class="h-auto w-full rounded-3xl md:h-[400px] md:w-[640px]"
+            />
+        </div>
+    </div>
 
   <div class="mx-auto flex flex-col justify-center gap-y-8">
       <div class="flex flex-col items-start gap-6 md:flex-row md:gap-8">
@@ -168,5 +169,6 @@ const teamMembers = [
           </div>
           {/each}
       </div>
+    </div>
   </div>
 </div>
