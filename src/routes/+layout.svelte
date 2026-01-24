@@ -6,6 +6,7 @@
 	// AnimeJS - dynamically imported to avoid SSR issues
 	type AnimeInstance = ReturnType<typeof import('animejs').animate>;
 	import ContactModal from '../components/ContactModal.svelte';
+	import LoadingScreen from '$lib/components/LoadingScreen.svelte';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import Lenis from 'lenis';
@@ -120,6 +121,9 @@
 		cleanupFns.forEach(fn => fn());
 	});
 </script>
+
+<!-- Loading Screen -->
+<LoadingScreen />
 
 <div class="no-scrollbar no-scrollbar min-h-screen overflow-x-hidden bg-gray-600 text-gray-base">
 	<!-- Global Particle Background -->

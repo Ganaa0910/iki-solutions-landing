@@ -10,12 +10,12 @@
 	let scrollProgress = $derived(Math.min(scrollY / 800, 1));
 
 	// Refs for all meshes
-	let mesh1: THREE.Mesh;
-	let mesh2: THREE.Mesh;
-	let mesh3: THREE.Mesh;
-	let mesh4: THREE.Mesh;
-	let mesh5: THREE.Mesh;
-	let mesh6: THREE.Mesh;
+	let mesh1: THREE.Mesh | undefined = $state(undefined);
+	let mesh2: THREE.Mesh | undefined = $state(undefined);
+	let mesh3: THREE.Mesh | undefined = $state(undefined);
+	let mesh4: THREE.Mesh | undefined = $state(undefined);
+	let mesh5: THREE.Mesh | undefined = $state(undefined);
+	let mesh6: THREE.Mesh | undefined = $state(undefined);
 
 	// Animation time
 	let t = $state(0);
