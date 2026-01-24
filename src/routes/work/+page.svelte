@@ -1,21 +1,14 @@
 <script lang="ts">
-	import { currentProject, projects } from '$lib/store';
-	import { goto } from '$app/navigation';
-	import type { Project } from '$lib/types';
-
-	const navigateToProject = (projectData: Project) => {
-		currentProject.set(projectData);
-		goto('/id');
-	};
+	import { projects } from '$lib/store';
 </script>
 
 <div class="flex min-h-screen flex-col">
 	<main class="flex-1">
-		<div class="container mx-auto">
+		<div class="mx-auto w-full max-w-[1440px] px-5 md:px-16">
 			<div class="flex flex-col gap-y-8 overflow-hidden">
 				<!-- Hero Section -->
 				<div
-					class="relative flex flex-col overflow-hidden border-b border-gray-400 bg-gradient-radial-bottom px-5 py-12"
+					class="relative flex flex-col overflow-hidden border-b border-gray-400 bg-gradient-radial-bottom py-12"
 				>
 					<div
 						class="absolute -left-[10px] bottom-0 top-4 h-[160px] w-[160px] md:-left-0 md:top-4 md:h-[240px] md:w-[240px]"
@@ -24,16 +17,16 @@
 					</div>
 					<div class="flex flex-col gap-y-6 md:w-[640px]">
 						<h1 class="z-10 mb-4 text-display-4 font-bold text-white md:text-display-2">
-							Discover Our Innovations
+							Discover Our Work
 						</h1>
 						<p class="z-10 text-body-2-regular text-gray-100 md:text-body-1-regular">
-							Discover how we're pushing boundaries and delivering real-world blockchain solutions.
+							Explore our portfolio of digital experiences and creative solutions.
 						</p>
 					</div>
 				</div>
 
 				<!-- Cards Grid Section -->
-				<div class="grid grid-cols-1 gap-8 md:grid-cols-[752px_528px]">
+				<div class="grid grid-cols-1 gap-8 md:grid-cols-[3fr_2fr]">
 					<!-- First Card -->
 					<div
 						class="group flex flex-col items-start gap-6 rounded-[20px] border border-gray-400 bg-work-card p-5 md:p-8"
@@ -51,7 +44,7 @@
 							<div
 								class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
 							>
-								<a href="/id" onclick={() => navigateToProject(projects.mintpark)}>
+								<a href="/projects/mintpark">
 									<div
 										class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
 									>
@@ -61,7 +54,7 @@
 							</div>
 						</div>
 						<div class="flex flex-col gap-3">
-							<a href="/id" onclick={() => navigateToProject(projects.mintpark)}>
+							<a href="/projects/mintpark">
 								<p class="text-h5 text-gray-50">Mint Park</p>
 							</a>
 							<p class="self-stretch text-caption-1-regular text-gray-100">
@@ -97,7 +90,7 @@
 						<div class="relative h-[240px] w-full md:h-[416px]">
 							<img
 								src="/Lumi.png"
-								alt="Mintpark"
+								alt="Lumi"
 								draggable="false"
 								class="h-[240px] w-full self-stretch rounded-lg bg-cover md:h-[416px]"
 							/>
@@ -107,7 +100,7 @@
 							<div
 								class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
 							>
-								<a href="/id" onclick={() => navigateToProject(projects.lumi)}>
+								<a href="/projects/lumi">
 									<div
 										class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
 									>
@@ -117,11 +110,11 @@
 							</div>
 						</div>
 						<div class="flex flex-col gap-3">
-              <a href="/id" onclick={() => navigateToProject(projects.lumi)}>
-							<p class="text-h5 text-gray-50">Lumi</p>
-              </a>
+							<a href="/projects/lumi">
+								<p class="text-h5 text-gray-50">Lumi</p>
+							</a>
 							<p class="self-stretch text-caption-1-regular text-gray-100">
-								Capture, share, and savor life’s flavors – your way. Snap a photo of your culinary
+								Capture, share, and savor life's flavors – your way. Snap a photo of your culinary
 								adventures, share stories, and post them as moments that vanish after 72 hours –
 								perfect for spontaneous, in-the-now connections.
 							</p>
@@ -137,16 +130,16 @@
 							>
 								<p class="text-caption-2-medium text-gray-50">Restaurant Loyalty</p>
 							</div>
-              <div
-              class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
-            >
-              <p class="text-caption-2-medium text-gray-50">EVM</p>
-            </div>
+							<div
+								class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
+							>
+								<p class="text-caption-2-medium text-gray-50">EVM</p>
+							</div>
 						</div>
 					</div>
 				</div>
 
-				<div class="grid grid-cols-1 gap-8 md:grid-cols-[528px_752px]">
+				<div class="grid grid-cols-1 gap-8 md:grid-cols-[2fr_3fr]">
 					<!-- First Card -->
 					<div
 						class="group flex flex-col items-start gap-6 rounded-[20px] border border-gray-400 bg-work-card p-5 md:p-8"
@@ -154,7 +147,7 @@
 						<div class="relative h-[240px] w-full md:h-[416px]">
 							<img
 								src="/PepePunks.png"
-								alt="Mintpark"
+								alt="Pepe Punks"
 								draggable="false"
 								class="h-[240px] w-full self-stretch rounded-lg md:h-[416px]"
 							/>
@@ -164,7 +157,7 @@
 							<div
 								class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
 							>
-								<a href="/id" onclick={() => navigateToProject(projects.pepepunks)}>
+								<a href="/projects/pepepunks">
 									<div
 										class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
 									>
@@ -174,9 +167,9 @@
 							</div>
 						</div>
 						<div class="flex flex-col gap-3">
-              <a href="/id" onclick={() => navigateToProject(projects.pepepunks)}>
-							<p class="text-h5 text-gray-50">Pepe Punks</p>
-              </a>
+							<a href="/projects/pepepunks">
+								<p class="text-h5 text-gray-50">Pepe Punks</p>
+							</a>
 							<p class="self-stretch text-caption-1-regular text-gray-100">
 								Pepe Punks represents a breakthrough in Bitcoin Ordinals, pushing the limits of
 								digital artifact creation through advanced inscription techniques. Our team
@@ -210,7 +203,7 @@
 						<div class="relative h-[240px] w-full md:h-[416px]">
 							<img
 								src="/SatoshiPunks.webp"
-								alt="Mintpark"
+								alt="Satoshi Punks"
 								draggable="false"
 								class="h-[240px] w-full self-stretch rounded-lg bg-cover md:h-[416px]"
 							/>
@@ -220,10 +213,7 @@
 							<div
 								class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
 							>
-								<a
-									href="/id"
-									onclick={() => navigateToProject(projects.satoshipunks)}
-								>
+								<a href="/projects/satoshipunks">
 									<div
 										class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
 									>
@@ -233,16 +223,13 @@
 							</div>
 						</div>
 						<div class="flex flex-col gap-3">
-              <a
-              href="/id"
-              onclick={() => navigateToProject(projects.satoshipunks)}
-            >
-							<p class="text-h5 text-gray-50">Satoshi Punks</p>
-              </a>
+							<a href="/projects/satoshipunks">
+								<p class="text-h5 text-gray-50">Satoshi Punks</p>
+							</a>
 							<p class="self-stretch text-caption-1-regular text-gray-100">
 								Satoshi Punks (#36151-#73597) is a trailblazing Bitcoin NFT collection from the rare
 								sub-100k Ordinals, featuring 100 unique Punks that have already driven 10 BTC in
-								trading volume. As one of only eight collections featured on Magic Eden’s Bitcoin
+								trading volume. As one of only eight collections featured on Magic Eden's Bitcoin
 								NFT launch, Satoshi Punks represents authenticity, decentralization, and the future
 								of digital ownership on Bitcoin.
 							</p>
@@ -267,7 +254,7 @@
 					</div>
 				</div>
 
-				<div class="grid grid-cols-1 gap-8 md:grid-cols-[752px_528px]">
+				<div class="grid grid-cols-1 gap-8 md:grid-cols-[3fr_2fr]">
 					<!-- First Card -->
 					<div
 						class="group flex flex-col items-start gap-6 rounded-[20px] border border-gray-400 bg-work-card p-5 md:p-8"
@@ -275,7 +262,7 @@
 						<div class="relative h-[240px] w-full md:h-[416px]">
 							<img
 								src="/ShapeTown.png"
-								alt="Mintpark"
+								alt="Shape Town"
 								draggable="false"
 								class="h-[240px] w-full self-stretch rounded-lg bg-cover md:h-[416px]"
 							/>
@@ -286,7 +273,7 @@
 							<div
 								class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
 							>
-								<a href="/id" onclick={() => navigateToProject(projects.shapetown)}>
+								<a href="/projects/shapetown">
 									<div
 										class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
 									>
@@ -297,9 +284,9 @@
 						</div>
 
 						<div class="flex flex-col gap-3">
-              <a href="/id" onclick={() => navigateToProject(projects.shapetown)}>
-							<p class="text-h5 text-gray-50">Shape Town</p>
-              </a>
+							<a href="/projects/shapetown">
+								<p class="text-h5 text-gray-50">Shape Town</p>
+							</a>
 							<p class="self-stretch text-caption-1-regular text-gray-100">
 								Join a thriving community where every player shapes the world. Trade your crafted
 								NFTs, share resources, and connect with fellow townspeople in our social spaces.
@@ -329,7 +316,7 @@
 						<div class="relative h-[240px] w-full md:h-[416px]">
 							<img
 								src="/Araafal.png"
-								alt="Mintpark"
+								alt="Araafal"
 								draggable="false"
 								class="h-[240px] w-full self-stretch rounded-lg bg-cover md:h-[416px]"
 							/>
@@ -339,7 +326,7 @@
 							<div
 								class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
 							>
-								<a href="/id" onclick={() => navigateToProject(projects.araafal)}>
+								<a href="/projects/araafal">
 									<div
 										class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
 									>
@@ -349,7 +336,7 @@
 							</div>
 						</div>
 						<div class="flex flex-col gap-3">
-							<a href="/id" onclick={() => navigateToProject(projects.araafal)}>
+							<a href="/projects/araafal">
 								<p class="text-h5 text-gray-50">Araafal</p>
 							</a>
 							<p class="self-stretch text-caption-1-regular text-gray-100">
@@ -370,11 +357,11 @@
 							>
 								<p class="text-caption-2-medium text-gray-50">BRC20</p>
 							</div>
-              <div
-              class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
-            >
-              <p class="text-caption-2-medium text-gray-50">Bitcoin Mainnet</p>
-            </div>
+							<div
+								class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
+							>
+								<p class="text-caption-2-medium text-gray-50">Bitcoin Mainnet</p>
+							</div>
 						</div>
 					</div>
 				</div>

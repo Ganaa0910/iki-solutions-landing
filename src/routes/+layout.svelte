@@ -3,19 +3,49 @@
 	import { fade, fly, slide } from 'svelte/transition';
 	import { page } from '$app/stores';
 	import Button from '../components/ui/Button.svelte';
-	import gsap from 'gsap';
-  import ContactModal from '../components/ContactModal.svelte';
+	// AnimeJS - dynamically imported to avoid SSR issues
+	type AnimeInstance = ReturnType<typeof import('animejs').animate>;
+	import ContactModal from '../components/ContactModal.svelte';
 	import { onMount } from 'svelte';
-let isModalOpen = $state(false);
+	import { browser } from '$app/environment';
+	import Lenis from 'lenis';
+	import gsap from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-import { currentProject, projects } from '$lib/store';
-	import { goto } from '$app/navigation';
-	import type { Project } from '$lib/types';
+	// Lazy load particle background
+	let ParticleField: typeof import('$lib/components/ParticleField.svelte').default | null = $state(null);
 
-	const navigateToProject = (projectData: Project) => {
-		currentProject.set(projectData);
-		goto('/id');
-	};
+	let lenis: Lenis;
+
+	onMount(async () => {
+		if (browser) {
+			const module = await import('$lib/components/ParticleField.svelte');
+			ParticleField = module.default;
+
+			// Register GSAP plugin
+			gsap.registerPlugin(ScrollTrigger);
+
+			// Initialize Lenis smooth scroll
+			lenis = new Lenis({
+				duration: 1.2,
+				easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+				orientation: 'vertical',
+				smoothWheel: true
+			});
+
+			// Connect Lenis to ScrollTrigger
+			lenis.on('scroll', ScrollTrigger.update);
+
+			// Use GSAP ticker for Lenis (smoother than rAF)
+			gsap.ticker.add((time) => {
+				lenis.raf(time * 1000);
+			});
+			gsap.ticker.lagSmoothing(0);
+		}
+	});
+
+	let isModalOpen = $state(false);
+
 
 	let { children } = $props();
 	const navItems = [
@@ -32,50 +62,83 @@ import { currentProject, projects } from '$lib/store';
 	let isMenuOpen = $state(false);
 	let isActive = (href: string) => $page.url.pathname === href;
 
-	onMount(() => {
+	import { onDestroy } from 'svelte';
+
+	let cleanupFns: (() => void)[] = [];
+
+	onMount(async () => {
+		// Load AnimeJS dynamically (SSR-safe)
+		const { animate } = await import('animejs');
+
 		const navLinks = document.querySelectorAll('.nav-link');
 
 		navLinks.forEach((link) => {
-			const timeline = gsap
-				.timeline({ paused: true })
-				.to(link.querySelector('.top-right'), {
+			const topRight = link.querySelector('.top-right') as HTMLElement;
+			const bottomLeft = link.querySelector('.bottom-left') as HTMLElement;
+
+			const handleEnter = () => {
+				animate(topRight, {
 					top: 0,
 					right: 0,
-					duration: 0.3,
-					ease: 'power2.inOut'
-				})
-				.to(
-					link.querySelector('.bottom-left'),
-					{
-						bottom: 0,
-						left: 0,
-						duration: 0.3,
-						ease: 'power2.inOut'
-					},
-					'<'
-				);
+					duration: 300,
+					ease: 'inOutQuad'
+				});
+				animate(bottomLeft, {
+					bottom: 0,
+					left: 0,
+					duration: 300,
+					ease: 'inOutQuad'
+				});
+			};
 
-			link.addEventListener('mouseenter', () => timeline.play());
-			link.addEventListener('mouseleave', () => timeline.reverse());
+			const handleLeave = () => {
+				animate(topRight, {
+					top: '0.75rem',
+					right: '0.75rem',
+					duration: 300,
+					ease: 'inOutQuad'
+				});
+				animate(bottomLeft, {
+					bottom: '0.75rem',
+					left: '0.75rem',
+					duration: 300,
+					ease: 'inOutQuad'
+				});
+			};
+
+			link.addEventListener('mouseenter', handleEnter);
+			link.addEventListener('mouseleave', handleLeave);
+
+			cleanupFns.push(() => {
+				link.removeEventListener('mouseenter', handleEnter);
+				link.removeEventListener('mouseleave', handleLeave);
+			});
 		});
+	});
+
+	onDestroy(() => {
+		cleanupFns.forEach(fn => fn());
 	});
 </script>
 
 <div class="no-scrollbar no-scrollbar min-h-screen overflow-x-hidden bg-gray-600 text-gray-base">
+	<!-- Global Particle Background -->
+	{#if ParticleField}
+		<ParticleField />
+	{/if}
+
 	<section class="h-[72px]">
-		<nav
-			class="fixed left-1/2 z-50 flex w-full max-w-[1440px] -translate-x-1/2 justify-between border-b border-gray-500 bg-opacity-600 px-5 py-5 backdrop-blur-60 md:px-16"
-		>
-			<a href="/" draggable="false" class="flex items-center">
-				<img
-					src="/Logo.svg"
-					alt="Company Logo"
-					class="h-10 w-[172px] shrink-0"
-					width="172"
-					draggable="false"
-					height="40"
-				/>
-			</a>
+		<div class="fixed top-0 left-0 right-0 z-50 border-b border-gray-500 bg-opacity-600 backdrop-blur-60">
+			<nav class="mx-auto flex w-full max-w-[1440px] justify-between px-5 py-5 md:px-16">
+				<a href="/" draggable="false" class="flex items-center gap-3">
+					<img
+						src="/Logo.svg"
+						alt="iki.studio"
+						class="h-10 w-auto shrink-0"
+						draggable="false"
+					/>
+					<span class="text-lg font-semibold text-white">Iki solutions</span>
+				</a>
 
 			<!-- Desktop Menu -->
 			<div class="hidden items-center gap-10 md:flex">
@@ -178,7 +241,8 @@ import { currentProject, projects } from '$lib/store';
 					{/if}
 				</svg>
 			</button>
-		</nav>
+			</nav>
+		</div>
 
 		<!-- Mobile Menu -->
 		{#if isMenuOpen}
@@ -205,7 +269,7 @@ import { currentProject, projects } from '$lib/store';
 
 	{#key $page.url.pathname}
 		<main
-			class="mx-auto max-w-[1440px] overflow-hidden px-5 md:px-16 bg-gray-600 mb-[200px]"
+			class="w-full bg-gray-600 mb-[200px]"
 		>
   
 			{#if children}
@@ -227,40 +291,41 @@ import { currentProject, projects } from '$lib/store';
                     from-teal-300 via-gray-100  
                     to-blue-300">
 		<div class="flex flex-col justify-between  gap-y-10  md:flex-row">
-			<img
-				src="/Logo.svg"
-				alt="Company Logo"
-				class="h-10 w-[172px] shrink-0"
-				width="172"
-				draggable="false"
-				height="40"
-			/>
+			<a href="/" class="flex items-center gap-3">
+				<img
+					src="/Logo.svg"
+					alt="iki.studio"
+					class="h-10 w-auto shrink-0"
+					draggable="false"
+				/>
+				<span class="text-lg font-semibold text-gray-50">Iki solutions</span>
+			</a>
 			<div class="flex flex-col md:flex-row gap-y-10 waa md:px-0 md:py-0 md:pt-4 md:pb-8 md:w-[864px] md:justify-center md:items-start gap-x-4">
 				<div class="flex flex-1 justify-between gap-x-4">
 					<div class="flex flex-1 flex-col gap-5 ">
 						<p class="mb-1 text-body-2-bold text-gray-50">Projects</p>
-            <a href="/id" onclick={() => navigateToProject(projects.mintpark)}>
+            <a href="/projects/mintpark">
 							<p
 								class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 							>
 								Mint Park
 							</p>
 						</a>
-            <a href="/id" onclick={() => navigateToProject(projects.lumi)}>
+            <a href="/projects/lumi">
 							<p
 								class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 							>
 								Lumi
 							</p>
 						</a>
-            <a href="/id" onclick={() => navigateToProject(projects.satoshipunks)}>
+            <a href="/projects/satoshipunks">
 							<p
 								class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 							>
 								Satoshi Punks
 							</p>
 						</a>
-            <a href="/id" onclick={() => navigateToProject(projects.pepepunks)}>
+            <a href="/projects/pepepunks">
 							<p
 								class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 							>
@@ -293,14 +358,14 @@ import { currentProject, projects } from '$lib/store';
 						<p
 							class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 						>
-							Blockchain Development
+							Web Development
 						</p>
 					</a>
 					<a href="/services">
 						<p
 							class=" text-caption-1-medium text-gray-200 transition-all duration-300 hover:text-gray-100"
 						>
-							Smart Contracts
+							Mobile Apps
 						</p>
 					</a>
           <a href="/services">
@@ -337,7 +402,7 @@ import { currentProject, projects } from '$lib/store';
 				<div
 					class="linkedin-icon hover:shadow-hover flex flex-1 items-center justify-center gap-[10px] rounded-[8px] bg-opacity-white4 p-3 transition-all duration-300 hover:bg-gray-50"
 				>
-        <a href="https://www.linkedin.com/company/numadlabs" aria-label="20">
+        <a href="https://www.linkedin.com/company/ikistudio" aria-label="LinkedIn">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="21"
@@ -364,7 +429,7 @@ import { currentProject, projects } from '$lib/store';
 				<div
 					class="github-icon hover:shadow-hover flex flex-1 items-center justify-center gap-[10px] rounded-[8px] bg-opacity-white4 p-3 transition-all duration-300 hover:bg-gray-50"
 				>
-        <a href="https://github.com/numadlabs" aria-label="20">
+        <a href="https://github.com/ikistudio" aria-label="GitHub">
  
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -384,7 +449,7 @@ import { currentProject, projects } from '$lib/store';
 			</div>
 			<div class="flex justify-start">
 				<p class=" text-caption-1-regular text-gray-200">
-					© 2025 Numad Labs. All rights reserved.
+					© 2025 iki.studio. All rights reserved.
 				</p>
 			</div>
 		</div>

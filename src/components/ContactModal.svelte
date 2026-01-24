@@ -10,9 +10,9 @@
   }>();
 
 
-  const emailServiceId = import.meta.env.EMAILJS_SERVICE_ID
-  const templateId = import.meta.env.EMAILJS_TEMPLATE_ID;
-  const apiKey = import.meta.env.EMAILJS_PUBLIC_KEY
+  const emailServiceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+  const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+  const apiKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
   let formData = $state({
       firstname: '',
@@ -49,7 +49,7 @@
       try {
           // Replace these with your EmailJS credentials
           const templateParams = {
-              to_email: 'itnumadlabs@gmail.com',
+              to_email: 'hello@iki.studio',
               from_name: `${formData.firstname} ${formData.lastname}`,
               from_email: formData.email,
               company_name: formData.companyName,
@@ -57,10 +57,10 @@
           };
 
           await emailjs.send(
-              'service_o9k723s', // Replace with your EmailJS service ID
-              'template_mkx6l5j', // Replace with your EmailJS template ID
+              emailServiceId || 'service_o9k723s',
+              templateId || 'template_mkx6l5j',
               templateParams,
-              'RbyP53s9N9RvOlKor' // Replace with your EmailJS public key
+              apiKey || 'RbyP53s9N9RvOlKor'
           );
 
           successMessage = 'Message sent successfully!';

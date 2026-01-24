@@ -1,679 +1,904 @@
 <script lang="ts">
 	import { Isax } from 'isaxvelte';
-  import { currentProject, projects } from '$lib/store';
-	import { goto } from '$app/navigation';
-	import type { Project } from '$lib/types';
 	import Button from '../components/ui/Button.svelte';
-  import ContactModal from '../components/ContactModal.svelte';
+	import ContactModal from '../components/ContactModal.svelte';
+	import { browser } from '$app/environment';
+	import { onMount, onDestroy } from 'svelte';
+	import gsap from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-  import { onMount, onDestroy } from 'svelte';
-	let textContainer: HTMLElement;
-  import gsap from 'gsap';
-  let isModalOpen = $state(false);
-  let displayWord = $state('')
-  let wordElement: HTMLSpanElement;
-  let currentWordIndex = 0;
-  const words = ['Building', 'Developing', 'Designing'];
-  displayWord = words[currentWordIndex];
-  let interval: ReturnType<typeof setInterval>;
-    let tl: GSAPTimeline;
+	// AnimeJS - dynamically imported to avoid SSR issues
+	let animate: typeof import('animejs').animate;
+	let stagger: typeof import('animejs').stagger;
+	let splitText: typeof import('animejs').splitText;
 
+	// Lazy load 3D components (SSR safe)
+	let HeroScene: typeof import('$lib/components/HeroScene.svelte').default | null = $state(null);
 
+	let isModalOpen = $state(false);
+	let heroContainer: HTMLElement;
+	let heroTitle: HTMLElement;
+	let heroSubtitle: HTMLElement;
+	let heroDescription: HTMLElement;
+	let heroCta: HTMLElement;
+	let servicesSection: HTMLElement;
+	let processSection: HTMLElement;
+	let worksSection: HTMLElement;
+	let ctaSection: HTMLElement;
+	let projectsTrack: HTMLElement;
+	let progressBar: HTMLElement;
 
+	// Horizontal scroll progress for projects
+	let projectsScrollProgress = $state(0);
 
-  function animateWord() {
-    tl = gsap.timeline();
-    tl.to(wordElement, {
-      opacity: 0,
-      y: -50,
-      duration: 0.3,
-      ease: "expo.in",
-      onComplete: () => {
-        currentWordIndex = (currentWordIndex + 1) % words.length;
-        displayWord = words[currentWordIndex];
-      }
-    });
+	// GSAP ScrollTrigger instance for cleanup
+	let projectsScrollTrigger: ScrollTrigger | null = null;
 
-    tl.to(wordElement, {
-      opacity: 1,
-      y: 0,
-      duration: 0.3,
-      ease: "expo.out"
-    });
-  }
+	// Mouse tracking for parallax
+	let mouseX = $state(0);
+	let mouseY = $state(0);
 
-  onMount(() => {
-    // Set initial state
-    gsap.set(wordElement, { opacity: 1, y: 0 });
-    
-    // Start the interval
-    interval = setInterval(animateWord, 3000);
-  });
+	// Rotating words
+	let wordElement: HTMLSpanElement;
+	let currentWordIndex = 0;
+	const words = ['Building', 'Designing', 'Creating', 'Crafting'];
+	let displayWord = $state(words[0]);
+	let wordInterval: ReturnType<typeof setInterval>;
 
-  onDestroy(() => {
-    if (interval) clearInterval(interval);
-    if (tl) tl.kill();
-  });
+	// Scroll progress
+	let scrollY = $state(0);
 
-	interface ServiceCardProps {
-		icon: string;
-		title: string;
-		direction: string;
-		description: string;
-		isDark?: boolean;
+	function handleCloseModal() {
+		isModalOpen = false;
 	}
 
+	// Track if word animation is in progress
+	let isAnimatingWord = false;
 
-	const navigateToProject = (projectData: Project) => {
-		currentProject.set(projectData);
-		goto('/id');
+	// Store split text references for cleanup
+	let heroSplits: { revert: () => void }[] = [];
+
+	function animateWord() {
+		if (!wordElement || isAnimatingWord || !animate) return;
+		isAnimatingWord = true;
+
+		// Animate out
+		animate(wordElement, {
+			opacity: { to: 0 },
+			translateY: { to: -20 },
+			duration: 300,
+			ease: 'inQuad',
+			onComplete: () => {
+				// Reset transform and change word
+				wordElement.style.transform = '';
+				wordElement.style.opacity = '0';
+
+				currentWordIndex = (currentWordIndex + 1) % words.length;
+				displayWord = words[currentWordIndex];
+
+				// Wait for Svelte to update, then animate in
+				setTimeout(() => {
+					animate(wordElement, {
+						opacity: { to: [0, 1] },
+						translateY: { to: [20, 0] },
+						duration: 400,
+						ease: 'outExpo',
+						onComplete: () => {
+							// Clean up transform styles
+							wordElement.style.transform = '';
+							isAnimatingWord = false;
+						}
+					});
+				}, 20);
+			}
+		});
+	}
+
+	// SVG Morph elements
+	let heroBlob1: SVGPathElement;
+	let heroBlob2: SVGPathElement;
+
+	const heroMorphPaths = {
+		path1: [
+			'M0,50 Q25,0 50,50 T100,50 T150,50',
+			'M0,50 Q25,80 50,50 T100,30 T150,50',
+			'M0,50 Q25,20 50,60 T100,40 T150,50'
+		],
+		path2: [
+			'M0,30 C20,10 40,50 60,30 S100,50 120,30',
+			'M0,30 C20,50 40,10 60,40 S100,20 120,30',
+			'M0,30 C20,30 40,30 60,50 S100,30 120,30'
+		]
 	};
 
-  function handleCloseModal() {
-    isModalOpen = false;
-}
+	function initHeroMorphs() {
+		if (!browser || !animate) return;
 
-	let cards: ServiceCardProps[] = [
+		// SVG path morphing with AnimeJS
+		if (heroBlob1) {
+			animate(heroBlob1, {
+				d: heroMorphPaths.path1,
+				duration: 6000,
+				ease: 'inOutSine',
+				loop: true,
+				alternate: true
+			});
+		}
+
+		if (heroBlob2) {
+			animate(heroBlob2, {
+				d: heroMorphPaths.path2,
+				duration: 5000,
+				ease: 'inOutQuad',
+				loop: true,
+				alternate: true
+			});
+		}
+	}
+
+	// Intersection Observer for scroll animations
+	function createScrollObserver() {
+		if (!browser || !animate) return;
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) {
+						const target = entry.target as HTMLElement;
+						const delay = parseInt(target.dataset.delay || '0');
+
+						animate(target, {
+							opacity: { to: [0, 1] },
+							y: { to: [60, 0] },
+							duration: 800,
+							delay,
+							ease: 'outExpo'
+						});
+
+						observer.unobserve(target);
+					}
+				});
+			},
+			{ threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+		);
+
+		// Observe all scroll-animated elements
+		document.querySelectorAll('.scroll-reveal').forEach((el) => {
+			(el as HTMLElement).style.opacity = '0';
+			observer.observe(el);
+		});
+
+		return observer;
+	}
+
+	// Enhanced services animation with stagger + direction
+	function initServicesAnimation() {
+		if (!browser || !animate) return;
+
+		const serviceCards = document.querySelectorAll('.service-card');
+		serviceCards.forEach((el) => {
+			(el as HTMLElement).style.opacity = '0';
+		});
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) {
+						// Animate all service cards with stagger
+						animate('.service-card', {
+							opacity: { to: [0, 1] },
+							y: { to: [80, 0] },
+							scale: { to: [0.9, 1] },
+							delay: stagger(150),
+							duration: 800,
+							ease: 'outExpo'
+						});
+
+						// Animate icons with bounce
+						animate('.service-card .service-icon', {
+							scale: { to: [0, 1.2, 1] },
+							rotate: { to: [45, 0] },
+							delay: stagger(150, { start: 200 }),
+							duration: 600,
+							ease: 'outBack'
+						});
+
+						observer.unobserve(entry.target);
+					}
+				});
+			},
+			{ threshold: 0.2 }
+		);
+
+		if (servicesSection) {
+			observer.observe(servicesSection);
+		}
+	}
+
+	// GSAP ScrollTrigger for horizontal scroll
+	function initProjectsScroll() {
+		if (!browser || !worksSection || !projectsTrack) return;
+
+		// Register GSAP plugin
+		gsap.registerPlugin(ScrollTrigger);
+
+		// Calculate scroll distance (track width - viewport + padding for full reveal)
+		const totalWidth = projectsTrack.scrollWidth;
+		const viewportWidth = window.innerWidth;
+		const isMobile = viewportWidth < 768;
+		const fullScrollDistance = totalWidth - viewportWidth + 200;
+
+		// Mobile starts at 0%, desktop starts at 20%
+		const startPercent = isMobile ? 0 : 0.2;
+		const initialOffset = fullScrollDistance * startPercent;
+		const scrollDistance = fullScrollDistance * (1 - startPercent);
+
+		// Set initial position
+		gsap.set(projectsTrack, { x: -initialOffset });
+
+		// Create ScrollTrigger with pinning
+		const trigger = ScrollTrigger.create({
+			trigger: worksSection,
+			start: 'top top',
+			end: () => `+=${scrollDistance}`,
+			pin: true,
+			scrub: 1,
+			anticipatePin: 1,
+			invalidateOnRefresh: true,
+			onUpdate: (self) => {
+				// Progress calculation
+				const adjustedProgress = startPercent + (self.progress * (1 - startPercent));
+				projectsScrollProgress = adjustedProgress;
+				// Animate track position
+				gsap.set(projectsTrack, { x: -initialOffset - (scrollDistance * self.progress) });
+				// Update progress bar
+				if (progressBar) {
+					gsap.set(progressBar, { width: `${adjustedProgress * 100}%` });
+				}
+			}
+		});
+
+		projectsScrollTrigger = trigger;
+
+		return () => {
+			if (projectsScrollTrigger) {
+				projectsScrollTrigger.kill();
+				projectsScrollTrigger = null;
+			}
+		};
+	}
+
+	onMount(async () => {
+		if (browser) {
+			// Load AnimeJS dynamically (SSR-safe)
+			const animeModule = await import('animejs');
+			animate = animeModule.animate;
+			stagger = animeModule.stagger;
+			splitText = animeModule.splitText;
+
+			// Register GSAP plugin (for horizontal scroll)
+			gsap.registerPlugin(ScrollTrigger);
+
+			// Load 3D scene
+			const module = await import('$lib/components/HeroScene.svelte');
+			HeroScene = module.default;
+
+			// Wait for DOM to be ready
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			// Hero animations with AnimeJS v4
+			const heroLines = document.querySelectorAll('.hero-line');
+			if (heroLines.length > 0) {
+				animate(heroLines, {
+					opacity: { to: [0, 1] },
+					y: { to: [60, 0] },
+					delay: stagger(150),
+					duration: 800,
+					ease: 'outExpo'
+				});
+			}
+
+			// Subtitle animation
+			if (heroSubtitle) {
+				animate(heroSubtitle, {
+					opacity: { to: [0, 1] },
+					y: { to: [60, 0] },
+					duration: 800,
+					delay: 500,
+					ease: 'outExpo'
+				});
+			}
+
+			// Description animation
+			if (heroDescription) {
+				animate(heroDescription, {
+					opacity: { to: [0, 1] },
+					y: { to: [40, 0] },
+					duration: 600,
+					delay: 700,
+					ease: 'outExpo'
+				});
+			}
+
+			// CTA animation
+			if (heroCta) {
+				animate(heroCta, {
+					opacity: { to: [0, 1] },
+					y: { to: [30, 0] },
+					scale: { to: [0.9, 1] },
+					duration: 500,
+					delay: 900,
+					ease: 'outExpo'
+				});
+			}
+
+			// Tags animation
+			const heroTags = document.querySelectorAll('.hero-tag');
+			if (heroTags.length > 0) {
+				animate(heroTags, {
+					opacity: { to: [0, 1] },
+					y: { to: [20, 0] },
+					scale: { to: [0.8, 1] },
+					delay: stagger(100, { start: 800 }),
+					duration: 400,
+					ease: 'outExpo'
+				});
+			}
+
+			// Start word rotation
+			wordInterval = setInterval(animateWord, 2500);
+
+			// Mouse parallax
+			const handleMouseMove = (e: MouseEvent) => {
+				mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+				mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+			};
+			window.addEventListener('mousemove', handleMouseMove);
+
+			// Scroll tracking
+			const handleScroll = () => {
+				scrollY = window.scrollY;
+			};
+			window.addEventListener('scroll', handleScroll);
+
+			// Initialize scroll observer
+			setTimeout(() => createScrollObserver(), 100);
+
+			// Initialize hero morphs
+			setTimeout(() => initHeroMorphs(), 200);
+
+			// Initialize enhanced services animation
+			setTimeout(() => initServicesAnimation(), 150);
+
+			// Initialize GSAP ScrollTrigger for projects
+			let cleanupProjectsScroll: (() => void) | undefined;
+			setTimeout(() => {
+				cleanupProjectsScroll = initProjectsScroll();
+			}, 100);
+
+			return () => {
+				window.removeEventListener('mousemove', handleMouseMove);
+				window.removeEventListener('scroll', handleScroll);
+				cleanupProjectsScroll?.();
+			};
+		}
+	});
+
+	onDestroy(() => {
+		if (wordInterval) clearInterval(wordInterval);
+		// Cleanup split text instances
+		heroSplits.forEach((split) => {
+			try {
+				split.revert();
+			} catch (e) {
+				// Ignore errors during cleanup
+			}
+		});
+		heroSplits = [];
+	});
+
+	const services = [
+		{
+			icon: 'code1',
+			title: 'Web Development',
+			description: 'Modern, performant web applications using cutting-edge technologies. From landing pages to complex platforms.'
+		},
 		{
 			icon: 'mobileprogramming',
-			title: 'Mobile Application Development',
-			direction: 'br',
-			description:
-				'We create seamless and scalable mobile applications designed to meet the needs of a connected and ever-evolving digital world, ensuring robust performance and an exceptional user experience.',
-			isDark: true
+			title: 'Mobile Development',
+			description: 'Native and cross-platform mobile apps crafted for seamless experiences across all devices.'
 		},
 		{
-			icon: 'box2',
-			title: 'Smart Contract Development',
-			direction: 'bl',
-			description:
-				'Our smart contracts are built with precision to deliver secure, efficient, and transparent solutions, enabling trust and automation in your blockchain-based transactions.',
-			isDark: false
-		},
-		{
-			icon: 'data',
-			title: 'Decentralized Application Development',
-			direction: 'tr',
-			description:
-				'We specialize in crafting decentralized applications that prioritize user autonomy and innovation, redefining how systems operate in the blockchain ecosystem.',
-			isDark: true
+			icon: 'magicpen',
+			title: 'Creative Development',
+			description: 'Pushing boundaries with animations, 3D elements, and interactive storytelling that captivates.'
 		},
 		{
 			icon: 'pentool2',
 			title: 'UX/UI Design',
-			direction: 'tl',
-			description:
-				'Our design process focuses on creating intuitive and visually engaging user experiences, ensuring every platform is as functional as it is beautiful.',
-			isDark: false
+			description: 'Intuitive and visually engaging experiences. Functional meets beautiful.'
 		}
 	];
 
 	const processes = [
+		{ icon: 'glass', title: 'Discover', description: 'Deep dive into your vision, goals, and challenges.' },
+		{ icon: 'brush2', title: 'Design', description: 'Craft intuitive interfaces and compelling visuals.' },
+		{ icon: 'code1', title: 'Develop', description: 'Build with precision using modern technologies.' },
+		{ icon: 'rocket', title: 'Deploy', description: 'Launch, optimize, and scale with confidence.' }
+	];
+
+	const projects = [
 		{
-			number: 1,
-      icon: 'glass',
-			title: 'Ignite',
-			description:
-				'We ignite the journey with bold ideas and comprehensive planning, transforming possibilities into actionable goals.'
+			name: 'Mint Park',
+			description: 'NFT marketplace on Bitcoin L2 with no-code minting tools for creators.',
+			image: '/Mintpark.png',
+			tags: ['Cross-Chain', 'CaaS', 'Creator Tools'],
+			href: '/projects/mintpark'
 		},
 		{
-			number: 2,
-      icon: 'security',
-			title: 'Forge',
-			description: 'Through cutting-edge development, we forge secure, innovative blockchain solutions tailored to your needs.'
+			name: 'Lumi',
+			description: 'Capture and share culinary adventures with ephemeral 72-hour moments.',
+			image: '/Lumi.png',
+			tags: ['Mobile App', 'Social Platform'],
+			href: '/projects/lumi'
 		},
 		{
-			number: 3,
-      icon: 'code`',
-			title: 'Elevate',
-			description: 'Seamlessly elevate your systems with scalable integrations and optimized performance.'
+			name: 'Satoshi Punks',
+			description: 'Trailblazing Bitcoin NFT collection from rare sub-100k Ordinals.',
+			image: '/SatoshiPunks.webp',
+			tags: ['Ordinals', 'NFT Collection'],
+			href: '/projects/satoshipunks'
 		},
 		{
-			number: 4,
-      icon: 'ranking1',
-			title: 'Thrive',
-			description: 'Delivering solutions that empower your success, with ongoing support to ensure you thrive in the digital era.'
+			name: 'Shapetown',
+			description: 'Interactive 3D world builder for creative expression and collaboration.',
+			image: '/ShapeTown.png',
+			tags: ['Web3', '3D', 'Creator Tools'],
+			href: '/projects/shapetown'
 		}
 	];
 
-
-	const tags = [
-		'Decentralized Finance',
-		'Smart Contract',
-		'Blockchain Development',
-		'Web3',
-		'Real World Asset',
-		'Cross-Chain',
-
+	const heroTags = ['Web Apps', 'Mobile', 'Creative Dev', 'UI/UX', 'E-Commerce'];
+	const tagPositions = [
+		{ top: '5%', left: '0%' },
+		{ top: '20%', left: '50%' },
+		{ top: '45%', left: '10%' },
+		{ top: '60%', left: '55%' },
+		{ top: '80%', left: '25%' }
 	];
-
 </script>
 
 <style>
-	.word-container {
-		position: relative;
-		display: inline-block;
-		height: 1em;
-		vertical-align: bottom;
-		overflow: hidden;
+	.hero-gradient {
+		background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(113, 113, 122, 0.15), transparent);
 	}
 
-	.word {
-		position: absolute;
-		left: 50%;
-		transform: translateX(-50%);
-		white-space: nowrap;
-		will-change: transform, opacity;
+	/* Hero line containers */
+	.hero-line {
+		display: block;
+		overflow: visible;
+		padding-bottom: 0.1em;
+	}
+
+	/* Word element specific styling */
+	.word-element {
+		display: inline-block;
+		padding-bottom: 0.15em;
+		margin-bottom: -0.15em;
+	}
+
+	.text-gradient {
+		background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 50%, #ffffff 100%);
+		background-size: 200% 200%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: shimmer 8s ease infinite;
+	}
+
+	@keyframes shimmer {
+		0%, 100% { background-position: 0% 50%; }
+		50% { background-position: 100% 50%; }
+	}
+
+	.glow-line {
+		background: linear-gradient(90deg, transparent, rgba(161, 161, 170, 0.5), transparent);
+		height: 1px;
+	}
+
+	.floating {
+		animation: float 6s ease-in-out infinite;
+	}
+
+	@keyframes float {
+		0%, 100% { transform: translateY(0px); }
+		50% { transform: translateY(-20px); }
+	}
+
+	.card-glow:hover {
+		box-shadow: 0 0 60px -12px rgba(161, 161, 170, 0.2);
+	}
+
+	.project-card {
+		transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+		background: linear-gradient(135deg, rgba(24, 24, 27, 0.95) 0%, rgba(9, 9, 11, 0.98) 100%);
+	}
+
+	.project-card:hover {
+		border-color: rgba(113, 113, 122, 0.5);
+		box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.5);
+	}
+
+	/* Service card initial state */
+	.service-card {
+		opacity: 0;
+	}
+
+	/* Service icon animation */
+	.service-icon {
+		transform-origin: center;
+	}
+
+	/* Projects section - ensure clipping and containment */
+	.projects-section {
+		overflow: hidden;
+		contain: paint;
+	}
+
+	/* Projects horizontal scroll track - GSAP handles transforms */
+	.projects-track {
+		/* GSAP controls transforms */
 	}
 </style>
 
-<div class="scrol no-scrollbar flex w-full justify-center overflow-hidden">
- 
-	<img
-		src="/Pattern.svg"
-		alt=""
-		class="absolute max-h-[472px] w-full shrink-0 select-none"
-		draggable="false"
-	/>
-	<div class="z-10 mt-16 flex flex-col justify-between gap-8">
-		<div class="mb-16 flex flex-col md:flex-row">
-      <div class="flex-1 items-start">
-        <div class="font-bold text-4xl md:text-display-2 text-gray-base">
-          <div class="flex flex-wrap items-center gap-2 md:gap-3" bind:this={textContainer}>
-            <span
-              bind:this={wordElement}
-              class="inline-block font-bold text-display-3 md:text-display-2 text-gray-base"
-            >
-              {displayWord}
-            </span>
-            <span class=" text-display-3 md:text-display-2 font-bold text-gray-base">with</span>
-          </div>
-          <div class="mt-4 md:mt-4 text-display-3 md:text-display-2 font-bold text-gray-base">
-            trust and passion
-          </div>
-        </div>
-      </div>
-			<div class="flex-1 items-center justify-center py-8">
-				<p class="text-body-2-regular md:text-body-1-regular text-gray-50">
-					Your trusted partner in Web3 innovation. Numad Labs blends deep blockchain expertise and exceptional craftsmanship to bring your decentralized vision to life.
-				</p>
-			</div>
-		</div>
+<!-- Hero Section -->
+<section
+	bind:this={heroContainer}
+	class="relative min-h-[90vh] flex flex-col justify-center overflow-hidden hero-gradient"
+>
+	<!-- 3D Background -->
+	{#if HeroScene}
 		<div
-			class="relative mb-[200px] flex h-[520px] flex-col-reverse rounded-[32px] bg-[url('/Hero.jpg')] bg-cover bg-center bg-no-repeat overflow-hidden"
-			draggable="false"
+			class="absolute inset-0 w-full h-full"
+			style="transform: translate({mouseX * 10}px, {mouseY * 10}px)"
 		>
-			<div class="absolute bottom-4 right-0 xl:bottom-12 xl:right-12 flex w-full xl:w-[40vw] flex-row-reverse px-4 pt-[120px] flex-wrap gap-3 ">
-				{#each tags as tag}
-					<div class="flex items-center justify-center rounded-xl md:rounded-[24px] bg-opacity-300 px-5 py-3 md:px-8 md:py-6 backdrop-blur-40">
-						<p class="text-caption-1-medium md:text-body-1-medium">{tag}</p>
+			<HeroScene {scrollY} />
+		</div>
+	{/if}
+
+	<!-- SVG Morphing Lines -->
+	<svg
+		class="absolute inset-0 w-full h-full pointer-events-none opacity-30"
+		viewBox="0 0 150 100"
+		preserveAspectRatio="none"
+	>
+		<defs>
+			<linearGradient id="hero-line-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+				<stop offset="0%" style="stop-color: transparent" />
+				<stop offset="50%" style="stop-color: rgba(161, 161, 170, 0.5)" />
+				<stop offset="100%" style="stop-color: transparent" />
+			</linearGradient>
+		</defs>
+		<path
+			bind:this={heroBlob1}
+			d="M0,50 Q25,0 50,50 T100,50 T150,50"
+			fill="none"
+			stroke="url(#hero-line-grad)"
+			stroke-width="0.3"
+		/>
+		<path
+			bind:this={heroBlob2}
+			d="M0,30 C20,10 40,50 60,30 S100,50 120,30"
+			fill="none"
+			stroke="url(#hero-line-grad)"
+			stroke-width="0.2"
+			transform="translate(0, 40)"
+		/>
+	</svg>
+
+	<!-- Floating geometric accents -->
+	<div
+		class="absolute top-20 left-10 w-24 h-24 border border-zinc-700/30 rounded-full floating opacity-40"
+		style="animation-delay: 0s; transform: translate({mouseX * -20}px, {mouseY * -20}px)"
+	></div>
+	<div
+		class="absolute bottom-40 right-20 w-16 h-16 border border-zinc-600/20 rotate-45 floating opacity-30"
+		style="animation-delay: -2s; transform: translate({mouseX * 15}px, {mouseY * 15}px)"
+	></div>
+	<div
+		class="absolute top-1/3 right-1/4 w-8 h-8 bg-zinc-700/10 rounded-full floating opacity-50"
+		style="animation-delay: -4s; transform: translate({mouseX * -25}px, {mouseY * -25}px)"
+	></div>
+
+	<!-- Content -->
+	<div class="relative z-10 mx-auto w-full max-w-[1440px] px-5 md:px-16 py-20">
+		<div class="flex flex-col lg:flex-row gap-16 items-center">
+			<!-- Left: Main content -->
+			<div class="flex-1 space-y-8">
+				<div bind:this={heroTitle}>
+					<h1 class="text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.1] tracking-tight">
+						<span class="hero-line block">
+							<span
+								bind:this={wordElement}
+								class="inline-block text-gradient word-element"
+							>{displayWord}</span>
+						</span>
+						<span class="hero-line block text-zinc-400">digital</span>
+						<span class="hero-line block text-white">experiences</span>
+					</h1>
+				</div>
+
+				<div bind:this={heroSubtitle}>
+					<div class="glow-line w-32 mb-6"></div>
+					<p class="text-xl md:text-2xl text-zinc-400 font-light max-w-lg">
+						with trust and passion
+					</p>
+				</div>
+
+				<p
+					bind:this={heroDescription}
+					class="text-zinc-500 text-lg max-w-md leading-relaxed"
+				>
+					Your partner in digital innovation. We blend technical expertise
+					with exceptional craftsmanship to bring your vision to life.
+				</p>
+
+				<div bind:this={heroCta} class="flex gap-4 pt-4">
+					<Button size="lg" on:click={() => isModalOpen = true}>
+						Start a Project
+					</Button>
+					<a href="/work">
+						<Button size="lg" variant="secondary" rightIcon="arrowright">
+							View Work
+						</Button>
+					</a>
+				</div>
+			</div>
+
+			<!-- Right: Floating tags -->
+			<div class="relative h-[400px] hidden lg:block w-[400px] shrink-0">
+				{#each heroTags as tag, i}
+					<div
+						class="hero-tag absolute group whitespace-nowrap"
+						style="opacity: 0; top: {tagPositions[i].top}; left: {tagPositions[i].left};"
+					>
+						<div
+							class="px-5 py-3 rounded-2xl border border-zinc-700/50 bg-zinc-800/30 backdrop-blur-sm transition-all duration-300 group-hover:bg-zinc-700/50 group-hover:border-zinc-600 group-hover:scale-105 cursor-default"
+							style="transform: translate({mouseX * (5 + i * 3)}px, {mouseY * (5 + i * 3)}px);"
+						>
+							<span class="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">
+								{tag}
+							</span>
+						</div>
 					</div>
 				{/each}
 			</div>
 		</div>
-		<div class="">
-			<div class="flex justify-center">
-				<div class="flex items-center justify-center gap-3 rounded-[40px] border border-gray-300 bg-gray-500 px-4 py-3 mb-8">
-					<p class="text-gray-100">
-						<Isax name="flash1" type="twotone" size="20px" />
-					</p>
-					<p class="text-caption-1-medium text-gray-50">Our Services</p>
-				</div>
-			</div>
+	</div>
 
-			<div class="flex-col items-center justify-center">
-				<p class="text-center text-h1">Empowering the Future of Web3 and Beyond</p>
-				<p class="mt-5 text-center text-body-2-medium text-gray-100">
-					We design and develop cutting-edge Web3 solutions to transform ideas into scalable
-					platforms.
-				</p>
+	<!-- Scroll indicator -->
+	<div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50">
+		<span class="text-xs text-zinc-500 uppercase tracking-widest">Scroll</span>
+		<div class="w-px h-12 bg-gradient-to-b from-zinc-500 to-transparent"></div>
+	</div>
+</section>
+
+<!-- Services Section -->
+<section bind:this={servicesSection} class="py-32 relative">
+	<div class="mx-auto max-w-[1440px] px-5 md:px-16">
+		<!-- Section header -->
+		<div class="scroll-reveal text-center mb-20" data-delay="0">
+			<div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-zinc-700/50 bg-zinc-800/30 mb-6">
+				<Isax name="flash1" type="twotone" size="16px" />
+				<span class="text-sm text-zinc-400">Our Services</span>
 			</div>
-			<div class="flex mt-12">
-				<div class="relative grid sm:grid-cols-1 md:grid-cols-2 w-full">
-					<img
-						src="/Line2.svg"
-						alt="horizontal divider"
-						class="absolute hidden md:block left-0 top-[50%] w-full -translate-y-1/2"
-					/>
-					<img
-						src="/Line1.svg"
-						alt="vertical divider"
-						class="absolute hidden md:block left-[50%] top-0 h-[50%] -translate-x-1/2"
-					/>
-					<img
-						src="/Line3.svg"
-						alt="vertical divider"
-						class="absolute hidden md:block left-[50%] bottom-0 h-[50%] -translate-x-1/2"
-					/>
-					{#each cards as card}
-						<div
-							class={`group flex h-[320px] justify-center items-center p-4 md:p-8 gap-y-5 text-center duration-300 transition-all 
-							${card.direction === 'br'
-								? 'hover:bg-gradient-to-br'
-								: card.direction === 'bl'
-								? 'hover:bg-gradient-to-bl'
-								: card.direction === 'tr'
-								? 'hover:bg-gradient-to-tr'
-								: 'hover:bg-gradient-to-tl'}
-							from-gray-600 from-80% to-gray-500`}
-						>
-							<div class="flex-col gap-5">
-								<p class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 mb-4">
-									<Isax name={card.icon} type="outline" size="40px" />
-								</p>
-								<p class="text-h5 text-gray-50 group-hover:-translate-y-3 transition-transform duration-300">
-									{card.title}
-								</p>
-								<div class="px-8">
-									<p class="text-body-2-regular text-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-center">
-										{card.description}
-									</p>
-								</div>
-							</div>
-						</div>
-					{/each}
-				</div>
-			</div>
+			<h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
+				Crafting Digital Excellence
+			</h2>
+			<p class="text-zinc-500 text-lg max-w-2xl mx-auto">
+				We design and develop solutions that transform ideas into impactful platforms.
+			</p>
 		</div>
 
-    <div class="mb-20">
-			<div class="flex justify-center">
-				<div class="flex items-center justify-center gap-3 rounded-[40px] border border-gray-300 bg-gray-500 px-4 py-3 mb-8">
-					<p class="text-gray-100">
-						<Isax name="flash1" type="twotone" size="20px" />
-					</p>
-					<p class="text-caption-1-medium text-gray-50">Our Process</p>
+		<!-- Services grid -->
+		<div class="grid md:grid-cols-2 gap-6">
+			{#each services as service, i}
+				<div
+					class="service-card group p-8 rounded-3xl border border-zinc-800 bg-zinc-900/50
+							 hover:border-zinc-700 transition-all duration-500 card-glow cursor-default"
+				>
+					<div class="flex items-start gap-6">
+						<div class="service-icon p-4 rounded-2xl bg-zinc-800 group-hover:bg-zinc-700 transition-colors">
+							<span class="text-zinc-400 group-hover:text-white transition-colors">
+								<Isax name={service.icon} type="outline" size="28px" />
+							</span>
+						</div>
+						<div class="flex-1">
+							<h3 class="text-xl font-semibold text-white mb-2 group-hover:text-zinc-100">
+								{service.title}
+							</h3>
+							<p class="text-zinc-500 group-hover:text-zinc-400 transition-colors leading-relaxed">
+								{service.description}
+							</p>
+						</div>
+					</div>
 				</div>
-			</div>
+			{/each}
+		</div>
+	</div>
+</section>
 
-			<div class="flex-col items-center justify-center">
-				<p class="text-center text-h1">Turning Ideas into Innovation</p>
-				<p class="mt-5 text-center text-body-2-medium text-gray-100">
-          From bold ideas to seamless solutions, our process drives innovation every step of the way.
+<!-- Process Section -->
+<section bind:this={processSection} class="py-32 relative">
+	<div class="mx-auto max-w-[1440px] px-5 md:px-16">
+		<div class="scroll-reveal text-center mb-20" data-delay="0">
+			<div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-zinc-700/50 bg-zinc-800/30 mb-6">
+				<Isax name="routing2" type="twotone" size="16px" />
+				<span class="text-sm text-zinc-400">Our Process</span>
+			</div>
+			<h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
+				From Idea to Launch
+			</h2>
+			<p class="text-zinc-500 text-lg max-w-2xl mx-auto">
+				A streamlined approach that delivers results at every stage.
+			</p>
+		</div>
+
+		<!-- Process steps -->
+		<div class="relative">
+			<!-- Connecting line -->
+			<div class="hidden md:block absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent -translate-y-1/2"></div>
+
+			<div class="grid md:grid-cols-4 gap-8">
+				{#each processes as process, i}
+					<div
+						class="scroll-reveal relative text-center group"
+						data-delay={i * 150}
+					>
+						<!-- Step number -->
+						<div class="absolute -top-4 left-1/2 -translate-x-1/2 text-7xl font-bold text-zinc-800/50
+									group-hover:text-zinc-700/50 transition-colors select-none">
+							{String(i + 1).padStart(2, '0')}
+						</div>
+
+						<div class="relative pt-8">
+							<div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-zinc-800 border border-zinc-700
+										flex items-center justify-center group-hover:bg-zinc-700
+										group-hover:border-zinc-600 transition-all duration-300">
+								<span class="text-zinc-400 group-hover:text-white transition-colors">
+									<Isax name={process.icon} type="outline" size="24px" />
+								</span>
+							</div>
+							<h3 class="text-lg font-semibold text-white mb-2">{process.title}</h3>
+							<p class="text-zinc-500 text-sm">{process.description}</p>
+						</div>
+					</div>
+				{/each}
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Works Section - Horizontal Scroll -->
+<section bind:this={worksSection} class="projects-section h-screen flex flex-col justify-center bg-[#0a0a0a] overflow-hidden">
+	<!-- Header -->
+	<div class="mx-auto max-w-[1440px] w-full px-5 md:px-16 mb-8 md:mb-12">
+		<div class="scroll-reveal flex flex-col md:flex-row md:items-end md:justify-between gap-6" data-delay="0">
+			<div>
+				<div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-zinc-700/50 bg-zinc-800/30 mb-6">
+					<Isax name="box1" type="linear" size="16px" />
+					<span class="text-sm text-zinc-400">Featured Work</span>
+				</div>
+				<h2 class="text-4xl md:text-5xl font-bold text-white">
+					Projects That Define Us
+				</h2>
+			</div>
+			<a href="/work" class="hidden md:block">
+				<Button variant="secondary" rightIcon="arrowright">
+					View All Projects
+				</Button>
+			</a>
+		</div>
+	</div>
+
+	<!-- Horizontal scroll track -->
+	<div class="overflow-hidden">
+		<div
+			bind:this={projectsTrack}
+			class="projects-track flex gap-6 md:gap-8 pl-6 md:pl-[calc(50vw-325px)] pr-6 md:pr-24 will-change-transform"
+		>
+			{#each projects as project, i}
+				<a
+					href={project.href}
+					class="project-card flex-shrink-0 w-[85vw] md:w-[650px] h-[320px] md:h-[380px] flex rounded-3xl overflow-hidden border border-zinc-800 group"
+				>
+					<!-- Image side -->
+					<div class="w-3/5 relative overflow-hidden bg-zinc-900">
+						<img
+							src={project.image}
+							alt={project.name}
+							class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+						/>
+						<!-- Gradient overlay -->
+						<div class="absolute inset-0 bg-gradient-to-r from-transparent to-zinc-900/60"></div>
+					</div>
+
+					<!-- Content side -->
+					<div class="w-2/5 p-6 md:p-8 flex flex-col justify-between bg-zinc-900/95">
+						<div>
+							<span class="text-5xl md:text-6xl font-bold text-zinc-800">0{i + 1}</span>
+							<h3 class="text-xl md:text-2xl font-bold text-white mt-3 md:mt-4 group-hover:text-zinc-100 transition-colors">{project.name}</h3>
+						</div>
+						<p class="text-zinc-400 text-xs md:text-sm leading-relaxed line-clamp-3">{project.description}</p>
+						<div class="flex flex-wrap gap-2">
+							{#each project.tags as tag}
+								<span class="px-2 md:px-3 py-1 text-[10px] md:text-xs rounded-full border border-zinc-700 text-zinc-400">{tag}</span>
+							{/each}
+						</div>
+					</div>
+				</a>
+			{/each}
+
+			<!-- View all CTA card -->
+			<a
+				href="/work"
+				class="flex-shrink-0 w-[85vw] md:w-[320px] h-[320px] md:h-[380px] flex items-center justify-center rounded-3xl border border-zinc-800 bg-zinc-900/50 group hover:border-zinc-700 transition-all"
+			>
+				<div class="text-center">
+					<div class="w-16 h-16 mx-auto mb-4 rounded-full border border-zinc-700 flex items-center justify-center group-hover:bg-zinc-800 transition-colors">
+						<Isax name="arrowright" type="outline" size="24px" />
+					</div>
+					<span class="text-lg font-medium text-white">View All Work</span>
+				</div>
+			</a>
+		</div>
+	</div>
+
+	<!-- Progress indicator -->
+	<div class="mx-auto max-w-[1440px] w-full px-5 md:px-16 mt-8 md:mt-12">
+		<div class="h-px bg-zinc-800 relative overflow-hidden">
+			<div
+				bind:this={progressBar}
+				class="absolute top-0 left-0 h-full bg-zinc-500 w-0"
+			></div>
+		</div>
+	</div>
+
+	<!-- Mobile CTA -->
+	<div class="md:hidden mx-auto max-w-[1440px] w-full px-5 md:px-16 mt-6">
+		<a href="/work">
+			<Button variant="secondary" rightIcon="arrowright" class="w-full justify-center">
+				View All Projects
+			</Button>
+		</a>
+	</div>
+</section>
+
+<!-- CTA Section -->
+<section bind:this={ctaSection} class="py-32 relative">
+	<div class="mx-auto max-w-[1440px] px-5 md:px-16">
+		<div class="scroll-reveal relative rounded-[2rem] border border-zinc-800 bg-zinc-900/80 p-12 md:p-16 overflow-hidden" data-delay="0">
+			<!-- Background accent -->
+			<div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-zinc-800/20 to-transparent"></div>
+
+			<div class="relative z-10 text-center">
+				<h2 class="text-3xl md:text-5xl font-bold text-white mb-6">
+					Ready to Build Something<br />
+					<span class="text-gradient">Extraordinary?</span>
+				</h2>
+				<p class="text-zinc-400 text-lg max-w-xl mx-auto mb-10">
+					Share your vision, and we'll bring it to life with innovation,
+					passion, and technical excellence.
 				</p>
+				<Button size="lg" on:click={() => isModalOpen = true}>
+					Let's Work Together
+				</Button>
 			</div>
-      </div>
-<div class="relative ">
-  
-  <div class="space-y-12 md:space-y-0 max-w-[1440px]">
-    {#each processes as process, i}
-      <div class="relative flex {i % 2 === 0 ? 'md:justify-start' : 'md:justify-end'}">
-        <div class="w-full md:w-[calc(50%-0px)] p-5 flex flex-col gap-4 border rounded-2xl border-gray-400 bg-gray-600/95 backdrop-blur-sm relative z-10">
-          <div class="flex gap-4 items-center">
-            <div class="p-2 rounded-lg bg-gray-50 aspect-square justify-center items-center w-9 h-9 shadow-hover">
-              <span class="text-gray-600">
-                <Isax 
-                  name={i === 0 ? "glass" : 
-                       i === 1 ? "security" : 
-                       i === 2 ? "code1" : "ranking"} 
-                  type="outline" 
-                  size="20px" 
-                />
-              </span>
-            </div>
-            <p class="text-body-1-bold">{process.title}</p>
-          </div>
-          <p class="text-gray-100 text-caption-1-regular">
-            {process.description}
-          </p>
-        </div>
-      </div>
-    {/each}
-  </div>
-</div>
+		</div>
+	</div>
+</section>
 
-<div class="mt-[200px]">
-  <div class="">
-  <div class="flex justify-start">
-    <div class="flex items-center justify-center gap-3 rounded-[40px] border border-gray-300 bg-gray-500 px-4 py-3 mb-8">
-      <p class="text-gray-100">
-        <Isax name="box1" type="linear" size="20px" />
-      </p>
-      <p class="text-caption-1-medium text-gray-50">Our Works</p>
-    </div>
-  </div>
-  <div class="flex flex-col justify-start gap-5 mb-16">
-    <p class=" text-h1 text-white">Projects That Define Us</p>
-    <p class=" text-body-2-medium text-gray-100">Explore the projects that define our commitment to innovation, quality, and impact.</p>
-  </div>
-  <div class="">
-    <div class="grid grid-cols-1 gap-8 md:grid-cols-[752px_528px]">
-      <!-- First Card -->
-      <div
-        class="group flex flex-col items-start gap-6 rounded-[20px] border border-gray-400 bg-work-card p-5 md:p-8"
-      >
-        <div class="relative h-[240px] w-full md:h-[416px]">
-          <img
-            src="/Mintpark.png"
-            alt="Mintpark"
-            draggable="false"
-            class="h-[240px] w-full self-stretch rounded-lg bg-cover md:h-[416px]"
-          />
-          <div
-            class="group-hover:clip-path-corner absolute bottom-0 right-0 hidden h-[72px] w-[72px] bg-gray-600 opacity-0 group-hover:block group-hover:opacity-100"
-          ></div>
-          <div
-            class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
-          >
-            <a href="/id" onclick={() => navigateToProject(projects.mintpark)}>
-              <div
-                class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
-              >
-                <img src="/ArrowRight.svg" alt="arrow" />
-              </div>
-            </a>
-          </div>
-        </div>
-        <div class="flex flex-col gap-3">
-          <p class="text-h5 text-gray-50">Mint Park</p>
-          <p class="self-stretch text-caption-1-regular text-gray-100">
-            MintPark is a cutting-edge NFT marketplace built on Bitcoin's Layer 2, designed to offer fast, low-cost transactions and seamless minting of digital assets. It provides a no-code tool for artists, enabling creators to easily mint and manage their NFTs without technical expertise. 
-          </p>
-        </div>
-        <div class="flex flex-wrap content-center items-center gap-2 self-stretch">
-          <div
-            class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
-          >
-            <p class="text-caption-2-medium text-gray-50">Cross-Chain Marketplace</p>
-          </div>
-          <div
-            class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
-          >
-            <p class="text-caption-2-medium text-gray-50">CaaS</p>
-          </div>
-          <div
-            class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
-          >
-            <p class="text-caption-2-medium text-gray-50">Creator Program</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Second Card -->
-      <div
-        class="group flex flex-col items-start gap-6 rounded-[20px] border border-gray-400 bg-work-card p-5 md:p-8"
-      >
-        <div class="relative h-[240px] w-full md:h-[416px]">
-          <img
-            src="/Lumi.png"
-            alt="Mintpark"
-            draggable="false"
-            class="h-[240px] w-full self-stretch rounded-lg bg-cover md:h-[416px]"
-          />
-          <div
-            class="group-hover:clip-path-corner absolute bottom-0 right-0 hidden h-[72px] w-[72px] bg-gray-600 opacity-0 transition-all duration-300 ease-in-out group-hover:block group-hover:opacity-100"
-          ></div>
-          <div
-            class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
-          >
-            <a href="/id" onclick={() => navigateToProject(projects.lumi)}>
-              <div
-                class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
-              >
-                <img src="/ArrowRight.svg" alt="arrow" />
-              </div>
-            </a>
-          </div>
-        </div>
-        <div class="flex flex-col gap-3">
-          <p class="text-h5 text-gray-50">Lumi</p>
-          <p class="self-stretch text-caption-1-regular text-gray-100">
-            Capture, share, and savor life’s flavors – your way. Snap a photo of your culinary adventures, share stories, and post them as moments that vanish after 72 hours – perfect for spontaneous, in-the-now connections.
-          </p>
-        </div>
-        <div class="flex flex-wrap content-center items-center gap-2 self-stretch">
-          <div
-            class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
-          >
-            <p class="text-caption-2-medium text-gray-50">Restaurant Royalty Platform</p>
-          </div>
-          <div
-            class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
-          >
-            <p class="text-caption-2-medium text-gray-50">Mobile App</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 gap-8 md:grid-cols-[528px_752px]">
-      <!-- First Card -->
-      <div
-        class="group flex flex-col items-start gap-6 rounded-[20px] border border-gray-400 bg-work-card p-5 md:p-8"
-      >
-        <div class="relative h-[240px] w-full md:h-[416px]">
-          <img
-            src="/PepePunks.png"
-            alt="Mintpark"
-            draggable="false"
-            class="h-[240px] w-full self-stretch rounded-lg bg-contain md:h-[416px]"
-          />
-          <div
-            class="group-hover:clip-path-corner absolute bottom-0 right-0 hidden h-[72px] w-[72px] bg-gray-600 opacity-0 transition-all duration-300 ease-in-out group-hover:block group-hover:opacity-100"
-          ></div>
-          <div
-            class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
-          >
-            <a href="/id" onclick={() => navigateToProject(projects.pepepunks)}>
-              <div
-                class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
-              >
-                <img src="/ArrowRight.svg" alt="arrow" />
-              </div>
-            </a>
-          </div>
-        </div>
-        <div class="flex flex-col gap-3">
-          <p class="text-h5 text-gray-50">Pepe Punks</p>
-          <p class="self-stretch text-caption-1-regular text-gray-100">
-            Pepe Punks represents a breakthrough in Bitcoin Ordinals, pushing the limits of digital artifact creation through advanced inscription techniques. Our team implemented cursed inscriptions, re-inscriptions, and recursive inscriptions on a specially selected Block 9 sat.
-          </p>
-        </div>
-        <div class="flex flex-wrap content-center items-center gap-2 self-stretch">
-          <div
-            class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
-          >
-            <p class="text-caption-2-medium text-gray-50">Rare Sat</p>
-          </div>
-          <div
-            class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
-          >
-            <p class="text-caption-2-medium text-gray-50">Dual-Inscription</p>
-          </div>
-          <div
-            class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
-          >
-            <p class="text-caption-2-medium text-gray-50">Recursive Inscriptions</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Second Card -->
-      <div
-        class="group flex flex-col items-start gap-6 rounded-[20px] border border-gray-400 bg-work-card p-5 md:p-8"
-      >
-        <div class="relative h-[240px] w-full md:h-[416px]">
-          <img
-            src="/SatoshiPunks.webp"
-            alt="Mintpark"
-            draggable="false"
-            class="h-[240px] w-full self-stretch rounded-lg bg-cover md:h-[416px]"
-          />
-          <div
-            class="group-hover:clip-path-corner absolute bottom-0 right-0 hidden h-[72px] w-[72px] bg-gray-600 opacity-0 transition-all duration-300 ease-in-out group-hover:block group-hover:opacity-100"
-          ></div>
-          <div
-            class="absolute bottom-0 right-0 flex h-[72px] w-[72px] translate-x-0 translate-y-0 items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
-          >
-            <a
-              href="/id"
-              onclick={() => navigateToProject(projects.satoshipunks)}
-            >
-              <div
-                class="absolute bottom-0 right-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 p-3 text-gray-600 transition-transform duration-500 ease-in-out group-hover:scale-105"
-              >
-                <img src="/ArrowRight.svg" alt="arrow" />
-              </div>
-            </a>
-          </div>
-        </div>
-        <div class="flex flex-col gap-3">
-          <p class="text-h5 text-gray-50">Satoshi Punks</p>
-          <p class="self-stretch text-caption-1-regular text-gray-100">
-            Satoshi Punks (#36151-#73597) is a trailblazing Bitcoin NFT collection from the rare sub-100k Ordinals, featuring 100 unique Punks that have already driven 10 BTC in trading volume. As one of only eight collections featured on Magic Eden’s Bitcoin NFT launch, Satoshi Punks represents authenticity, decentralization, and the future of digital ownership on Bitcoin.
-          </p>
-        </div>
-        <div class="flex flex-wrap content-center items-center gap-2 self-stretch">
-          <div
-            class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
-          >
-            <p class="text-caption-2-medium text-gray-50">Ordinals</p>
-          </div>
-          <div
-            class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
-          >
-            <p class="text-caption-2-medium text-gray-50">Earliest Collection on BTC</p>
-          </div>
-          <div
-            class="flex items-center justify-center rounded-[40px] border border-gray-300 bg-gray-400 px-3 py-2"
-          >
-            <p class="text-caption-2-medium text-gray-50">Inscriptions</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 gap-8 md:grid-cols-[752px_528px]">
-    </div>
-
-    </div>
-    </div>
-    <div class="flex justify-center mt-16">
-      <a href="/work">
-        <Button variant='secondary' rightIcon={'arrowright'}>
-          Go to All Projects
-        </Button>
-      </a>
-    </div>
-  </div>
-
-  
-  </div>
-  
- 
-  </div>
-  <div class="flex flex-col xl:hidden mt-[240px]">
-    <img src="/Get-in-touch.png" alt="visual" class="w-full" />
-    <div class="mt-6 flex flex-col items-center gap-4">
-      <p class="text-center text-h4 text-white">Let's Make Ideas Happen!</p>
-      <p class="text-center text-caption-1-medium text-gray-100">
-        Share your vision, and we'll bring it to life with innovation, passion, and expertise.
-        Let's start something extraordinary together!
-      </p>
-      <Button size="md" on:click={() => isModalOpen = true}>Let's work together!</Button>
-    </div>
-  </div>
-  <div class="flex flex-col items-center mt-[240px] gap-6 px-5 py-6 w-[1440px]">
-    <!-- Mobile Layout -->
-
-
-    <!-- Desktop Layout -->
-    <div class="hidden xl:block w-[1440px]">
-      <div class="flex flex-row gap-8 px-16 items-center">
-        <div class="relative h-[480px] w-[640px] flex-1 shrink-0 px-[80px]">
-          <img
-            src="/Circle.svg"
-            alt="circle"
-            class="absolute bottom-0 bg-gradient-radial-center"
-          />
-          <div
-            class="group absolute left-[101px] top-[104px] inline-flex items-center justify-center gap-2 rounded-2xl border border-opacity-white4 bg-opacity-white4 px-4 py-3 backdrop-blur-8 transition-all duration-300 hover:bg-gray-50 hover:shadow-hover"
-          >
-            <span class="text-gray-50 transition-colors duration-300 group-hover:text-gray-600">
-              <Isax name="star1" type="outline" size="20px" />
-            </span>
-            <p
-              class="text-caption-1-medium text-gray-50 transition-colors duration-300 group-hover:text-gray-600"
-            >
-              Innovative
-            </p>
-          </div>
-          <div
-            class="group absolute right-[195px] top-[124px] inline-flex items-center justify-center gap-2 rounded-2xl border border-opacity-white4 bg-opacity-white4 px-4 py-3 backdrop-blur-8 transition-all duration-300 hover:bg-gray-50 hover:shadow-hover"
-          >
-            <span class="text-gray-50 transition-colors duration-300 group-hover:text-gray-600">
-              <Isax name="flash1" type="outline" size="20px" />
-            </span>
-            <p
-              class="text-caption-1-medium text-gray-50 transition-colors duration-300 group-hover:text-gray-600"
-            >
-            Clutch
-            </p>
-          </div>
-          <div
-            class="group absolute left-[174px] top-[208px] inline-flex items-center justify-center gap-2 rounded-2xl border border-opacity-white4 bg-opacity-white4 px-4 py-3 backdrop-blur-8 transition-all duration-300 hover:bg-gray-50 hover:shadow-hover"
-          >
-            <span class="text-gray-50 transition-colors duration-300 group-hover:text-gray-600">
-              <Isax name="weight1" type="outline" size="20px" />
-            </span>
-            <p
-              class="text-caption-1-medium text-gray-50 transition-colors duration-300 group-hover:text-gray-600"
-            >
-            Empowering
-            </p>
-          </div>
-          <div
-            class="group absolute bottom-[208px] right-[63px] inline-flex items-center justify-center gap-2 rounded-2xl border border-opacity-white4 bg-opacity-white4 px-4 py-3 backdrop-blur-8 transition-all duration-300 hover:bg-gray-50 hover:shadow-hover"
-          >
-            <span class="text-gray-50 transition-colors duration-300 group-hover:text-gray-600">
-              <Isax name="magicpen" type="outline" size="20px" />
-            </span>
-            <p
-              class="text-caption-1-medium text-gray-50 transition-colors duration-300 group-hover:text-gray-600"
-            >
-            Creativity
-            </p>
-          </div>
-          <div
-            class="group absolute bottom-[124px] left-[63px] inline-flex items-center justify-center gap-2 rounded-2xl border border-opacity-white4 bg-opacity-white4 px-4 py-3 backdrop-blur-8 transition-all duration-300 hover:bg-gray-50 hover:shadow-hover"
-          >
-            <span class="text-gray-50 transition-colors duration-300 group-hover:text-gray-600">
-              <Isax name="blur" type="outline" size="20px" />
-            </span>
-            <p
-              class="text-caption-1-medium text-gray-50 transition-colors duration-300 group-hover:text-gray-600"
-            >
-            Dependable
-            </p>
-          </div>
-          <div
-            class="group absolute bottom-[104px] right-[190px] inline-flex items-center justify-center gap-2 rounded-2xl border border-opacity-white4 bg-opacity-white4 px-4 py-3 backdrop-blur-8 transition-all duration-300 hover:bg-gray-50 hover:shadow-hover"
-          >
-            <span class="text-gray-50 transition-colors duration-300 group-hover:text-gray-600">
-              <Isax name="timer" type="outline" size="20px" />
-            </span>
-            <p
-              class="text-caption-1-medium text-gray-50 transition-colors duration-300 group-hover:text-gray-600"
-            >
-            Efficient
-            </p>
-          </div>
-        </div>
-        <div class="flex max-w-[640px] shrink-0 flex-col gap-y-8">
-          <p class="text-h4 text-white ">Let's Make Ideas Happen!</p>
-          <p class="self-stretch text-caption-1-medium text-gray-100">
-            Share your vision, and we'll bring it to life with innovation, passion, and expertise.
-            Let's start something extraordinary together!
-          </p>
-          <div class="">
-            <Button size="md" on:click={() => isModalOpen = true}>Let's work together!</Button>
-          </div>
-        </div>
-
-      </div>
-      </div>
-  </div>
-  <ContactModal 
-  isOpen={isModalOpen} 
-  onClose={handleCloseModal}
+<ContactModal
+	isOpen={isModalOpen}
+	onClose={handleCloseModal}
 />
