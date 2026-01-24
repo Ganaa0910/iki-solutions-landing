@@ -25,20 +25,28 @@ html.lenis, html.lenis body {
 
 
 
-body{
-background-color: '#06090C';
+body {
+  background-color: #06090C;
 }
 
+/* Global scrollbar hiding */
+html {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
 
+html::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Opera */
+}
+
+/* Utility class for other elements */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
 .no-scrollbar {
   scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  -ms-overflow-style: none;
 }
 
 

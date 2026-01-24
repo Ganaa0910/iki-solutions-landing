@@ -53,66 +53,85 @@
 	onMount(() => {
 		if (!browser) return;
 
+		// Detect Safari for performance optimizations
+		const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+		const isLowPower = navigator.hardwareConcurrency ? navigator.hardwareConcurrency <= 4 : false;
+		const shouldOptimize = isSafari || isLowPower;
+
 		// Canvas particle system
-		const ctx = canvas.getContext('2d');
+		const ctx = canvas.getContext('2d', { alpha: true });
 		if (!ctx) return;
 
 		let particles: Particle[] = [];
 		let shootingStars: ShootingStar[] = [];
-		const particleCount = 80;
+
+		// Reduce particle count for Safari/low-power devices
+		const particleCount = shouldOptimize ? 40 : 60;
+		const connectionDistance = shouldOptimize ? 80 : 100;
+		const maxConnections = shouldOptimize ? 3 : 5;
+
 		let mouseX = 0;
 		let mouseY = 0;
 		let lastShootingStarTime = 0;
-		const shootingStarInterval = 6000; // Spawn every 6-12 seconds - rare
+		const shootingStarInterval = 8000;
+
+		// Frame timing for consistent animation
+		let lastFrameTime = 0;
+		const targetFPS = shouldOptimize ? 30 : 60;
+		const frameInterval = 1000 / targetFPS;
 
 		function resize() {
-			canvas.width = window.innerWidth;
-			canvas.height = window.innerHeight;
+			const dpr = Math.min(window.devicePixelRatio || 1, shouldOptimize ? 1 : 2);
+			canvas.width = window.innerWidth * dpr;
+			canvas.height = window.innerHeight * dpr;
+			canvas.style.width = window.innerWidth + 'px';
+			canvas.style.height = window.innerHeight + 'px';
+			ctx.scale(dpr, dpr);
 			createParticles();
 		}
 
 		function createParticles() {
 			particles = [];
+			const width = window.innerWidth;
+			const height = window.innerHeight;
+
 			for (let i = 0; i < particleCount; i++) {
 				particles.push({
-					x: Math.random() * canvas.width,
-					y: Math.random() * canvas.height,
-					vx: (Math.random() - 0.5) * 0.5,
-					vy: (Math.random() - 0.5) * 0.5,
-					size: Math.random() * 2 + 1,
-					opacity: Math.random() * 0.4 + 0.1,
+					x: Math.random() * width,
+					y: Math.random() * height,
+					vx: (Math.random() - 0.5) * 0.3,
+					vy: (Math.random() - 0.5) * 0.3,
+					size: Math.random() * 1.5 + 0.5,
+					opacity: Math.random() * 0.3 + 0.1,
 					pulse: Math.random() * Math.PI * 2,
-					pulseSpeed: Math.random() * 0.02 + 0.01
+					pulseSpeed: Math.random() * 0.015 + 0.005
 				});
 			}
 		}
 
 		function spawnShootingStar() {
-			// Random angle between 25-55 degrees (diagonal streaks)
 			const angle = (Math.random() * 30 + 25) * (Math.PI / 180);
-			const speed = Math.random() * 4 + 10; // Slower streak
-
-			// Spawn from top edge mostly
-			const startX = Math.random() * canvas.width * 0.8;
-			const startY = -20;
+			const speed = Math.random() * 4 + 8;
+			const width = window.innerWidth;
 
 			shootingStars.push({
-				x: startX,
-				y: startY,
+				x: Math.random() * width * 0.8,
+				y: -20,
 				vx: Math.cos(angle) * speed,
 				vy: Math.sin(angle) * speed,
-				size: Math.random() * 1 + 1.5, // Bolder
+				size: Math.random() * 1 + 1,
 				opacity: 0,
-				tailLength: Math.random() * 8 + 12, // Shorter
+				tailLength: Math.random() * 6 + 8,
 				life: 0,
-				maxLife: 60
+				maxLife: 50
 			});
 		}
 
 		function drawShootingStars() {
 			const now = performance.now();
+			const height = window.innerHeight;
+			const width = window.innerWidth;
 
-			// Spawn new shooting star randomly
 			if (now - lastShootingStarTime > shootingStarInterval + Math.random() * 6000) {
 				spawnShootingStar();
 				lastShootingStarTime = now;
@@ -121,117 +140,104 @@
 			shootingStars = shootingStars.filter((star) => {
 				star.life++;
 
-				// Quick fade in, fade out at end
 				const fadeIn = Math.min(star.life / 5, 1);
 				const fadeOut = Math.max(0, 1 - (star.life - star.maxLife + 15) / 15);
-				star.opacity = fadeIn * fadeOut * 0.6;
+				star.opacity = fadeIn * fadeOut * 0.5;
 
-				// Update position
 				star.x += star.vx;
 				star.y += star.vy;
 
-				// Draw subtle tail
+				// Simple line instead of gradient for performance
 				const tailX = star.x - (star.vx / Math.sqrt(star.vx ** 2 + star.vy ** 2)) * star.tailLength;
 				const tailY = star.y - (star.vy / Math.sqrt(star.vx ** 2 + star.vy ** 2)) * star.tailLength;
-
-				const gradient = ctx.createLinearGradient(tailX, tailY, star.x, star.y);
-				gradient.addColorStop(0, 'rgba(200, 200, 205, 0)');
-				gradient.addColorStop(1, `rgba(220, 220, 225, ${star.opacity})`);
 
 				ctx.beginPath();
 				ctx.moveTo(tailX, tailY);
 				ctx.lineTo(star.x, star.y);
-				ctx.strokeStyle = gradient;
+				ctx.strokeStyle = `rgba(200, 200, 205, ${star.opacity})`;
 				ctx.lineWidth = star.size;
 				ctx.lineCap = 'round';
 				ctx.stroke();
 
-				// Tiny head glow
-				const headGlow = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.size * 2);
-				headGlow.addColorStop(0, `rgba(255, 255, 255, ${star.opacity * 0.8})`);
-				headGlow.addColorStop(1, 'rgba(220, 220, 225, 0)');
-
-				ctx.beginPath();
-				ctx.arc(star.x, star.y, star.size * 2, 0, Math.PI * 2);
-				ctx.fillStyle = headGlow;
-				ctx.fill();
-
-				// Keep if still alive and on screen
-				return (
-					star.life < star.maxLife &&
-					star.x < canvas.width + 50 &&
-					star.y < canvas.height + 50
-				);
+				return star.life < star.maxLife && star.x < width + 50 && star.y < height + 50;
 			});
 		}
 
-		function animateParticles() {
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
+		function animateParticles(currentTime: number) {
+			// Throttle frame rate
+			const elapsed = currentTime - lastFrameTime;
+			if (elapsed < frameInterval) {
+				animationId = requestAnimationFrame(animateParticles);
+				return;
+			}
+			lastFrameTime = currentTime - (elapsed % frameInterval);
 
+			const width = window.innerWidth;
+			const height = window.innerHeight;
+
+			ctx.clearRect(0, 0, width, height);
+
+			// Update and draw particles
 			particles.forEach((p) => {
-				// Update position
 				p.x += p.vx;
 				p.y += p.vy;
-
-				// Pulse animation
 				p.pulse += p.pulseSpeed;
-				const pulseFactor = 1 + Math.sin(p.pulse) * 0.3;
 
-				// Mouse repulsion
+				const pulseFactor = 1 + Math.sin(p.pulse) * 0.2;
+
+				// Mouse repulsion (simplified)
 				const dx = p.x - mouseX;
 				const dy = p.y - mouseY;
-				const distance = Math.sqrt(dx * dx + dy * dy);
-				if (distance < 150 && distance > 0) {
-					const force = (150 - distance) / 150;
-					p.vx += (dx / distance) * force * 0.02;
-					p.vy += (dy / distance) * force * 0.02;
+				const distSq = dx * dx + dy * dy;
+				if (distSq < 22500 && distSq > 0) { // 150^2
+					const dist = Math.sqrt(distSq);
+					const force = (150 - dist) / 150;
+					p.vx += (dx / dist) * force * 0.015;
+					p.vy += (dy / dist) * force * 0.015;
 				}
 
-				// Apply friction
 				p.vx *= 0.99;
 				p.vy *= 0.99;
 
-				// Wrap around edges
-				if (p.x < -10) p.x = canvas.width + 10;
-				if (p.x > canvas.width + 10) p.x = -10;
-				if (p.y < -10) p.y = canvas.height + 10;
-				if (p.y > canvas.height + 10) p.y = -10;
+				// Wrap around
+				if (p.x < -10) p.x = width + 10;
+				if (p.x > width + 10) p.x = -10;
+				if (p.y < -10) p.y = height + 10;
+				if (p.y > height + 10) p.y = -10;
 
-				// Draw particle with glow
-				const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * pulseFactor * 2);
-				gradient.addColorStop(0, `rgba(161, 161, 170, ${p.opacity * pulseFactor})`);
-				gradient.addColorStop(1, 'rgba(161, 161, 170, 0)');
+				// Draw simple circle (no gradient for performance)
+				const size = p.size * pulseFactor;
+				const alpha = p.opacity * pulseFactor;
 
 				ctx.beginPath();
-				ctx.arc(p.x, p.y, p.size * pulseFactor * 2, 0, Math.PI * 2);
-				ctx.fillStyle = gradient;
-				ctx.fill();
-
-				// Core
-				ctx.beginPath();
-				ctx.arc(p.x, p.y, p.size * pulseFactor * 0.5, 0, Math.PI * 2);
-				ctx.fillStyle = `rgba(212, 212, 216, ${p.opacity * pulseFactor})`;
+				ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+				ctx.fillStyle = `rgba(161, 161, 170, ${alpha})`;
 				ctx.fill();
 			});
 
-			// Draw connections
-			particles.forEach((p1, i) => {
-				particles.slice(i + 1).forEach((p2) => {
+			// Draw connections (optimized - limit per particle)
+			ctx.strokeStyle = 'rgba(113, 113, 122, 0.06)';
+			ctx.lineWidth = 0.5;
+
+			for (let i = 0; i < particles.length; i++) {
+				const p1 = particles[i];
+				let connections = 0;
+
+				for (let j = i + 1; j < particles.length && connections < maxConnections; j++) {
+					const p2 = particles[j];
 					const dx = p1.x - p2.x;
 					const dy = p1.y - p2.y;
-					const distance = Math.sqrt(dx * dx + dy * dy);
+					const distSq = dx * dx + dy * dy;
 
-					if (distance < 120) {
-						const opacity = 0.08 * (1 - distance / 120);
+					if (distSq < connectionDistance * connectionDistance) {
 						ctx.beginPath();
 						ctx.moveTo(p1.x, p1.y);
 						ctx.lineTo(p2.x, p2.y);
-						ctx.strokeStyle = `rgba(113, 113, 122, ${opacity})`;
-						ctx.lineWidth = 0.5;
 						ctx.stroke();
+						connections++;
 					}
-				});
-			});
+				}
+			}
 
 			// Draw shooting stars
 			drawShootingStars();
@@ -239,48 +245,52 @@
 			animationId = requestAnimationFrame(animateParticles);
 		}
 
-		// Track mouse
+		// Throttled mouse tracking
+		let mouseThrottle = 0;
 		const handleMouseMove = (e: MouseEvent) => {
-			mouseX = e.clientX;
-			mouseY = e.clientY;
+			const now = performance.now();
+			if (now - mouseThrottle > 16) { // ~60fps throttle
+				mouseX = e.clientX;
+				mouseY = e.clientY;
+				mouseThrottle = now;
+			}
 		};
-		window.addEventListener('mousemove', handleMouseMove);
+		window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
 		resize();
-		animateParticles();
-		window.addEventListener('resize', resize);
+		animationId = requestAnimationFrame(animateParticles);
+		window.addEventListener('resize', resize, { passive: true });
 
-		// SVG Morph animations with AnimeJS (dynamically imported)
-		import('animejs').then(({ animate }) => {
-			if (morphPath1 && morphPath2 && morphPath3) {
-				// Blob 1 - slow morph
-				animate(morphPath1, {
-					d: blobPaths.blob1,
-					ease: 'inOutQuad',
-					duration: 8000,
-					loop: true,
-					alternate: true
-				});
+		// SVG Morph animations (only if not Safari)
+		if (!shouldOptimize) {
+			import('animejs').then(({ animate }) => {
+				if (morphPath1 && morphPath2 && morphPath3) {
+					animate(morphPath1, {
+						d: blobPaths.blob1,
+						ease: 'inOutQuad',
+						duration: 10000,
+						loop: true,
+						alternate: true
+					});
 
-				// Blob 2 - medium morph
-				animate(morphPath2, {
-					d: blobPaths.blob2,
-					ease: 'inOutSine',
-					duration: 6000,
-					loop: true,
-					alternate: true
-				});
+					animate(morphPath2, {
+						d: blobPaths.blob2,
+						ease: 'inOutSine',
+						duration: 8000,
+						loop: true,
+						alternate: true
+					});
 
-				// Blob 3 - faster morph
-				animate(morphPath3, {
-					d: blobPaths.blob3,
-					ease: 'inOutCubic',
-					duration: 5000,
-					loop: true,
-					alternate: true
-				});
-			}
-		});
+					animate(morphPath3, {
+						d: blobPaths.blob3,
+						ease: 'inOutCubic',
+						duration: 7000,
+						loop: true,
+						alternate: true
+					});
+				}
+			});
+		}
 
 		return () => {
 			window.removeEventListener('resize', resize);
@@ -311,20 +321,20 @@
 >
 	<defs>
 		<linearGradient id="blob-gradient-1" x1="0%" y1="0%" x2="100%" y2="100%">
-			<stop offset="0%" style="stop-color: rgba(113, 113, 122, 0.08)" />
-			<stop offset="100%" style="stop-color: rgba(82, 82, 91, 0.04)" />
+			<stop offset="0%" style="stop-color: rgba(113, 113, 122, 0.06)" />
+			<stop offset="100%" style="stop-color: rgba(82, 82, 91, 0.03)" />
 		</linearGradient>
 		<linearGradient id="blob-gradient-2" x1="100%" y1="0%" x2="0%" y2="100%">
-			<stop offset="0%" style="stop-color: rgba(161, 161, 170, 0.06)" />
+			<stop offset="0%" style="stop-color: rgba(161, 161, 170, 0.04)" />
 			<stop offset="100%" style="stop-color: rgba(113, 113, 122, 0.02)" />
 		</linearGradient>
 		<linearGradient id="blob-gradient-3" x1="50%" y1="0%" x2="50%" y2="100%">
-			<stop offset="0%" style="stop-color: rgba(82, 82, 91, 0.07)" />
-			<stop offset="100%" style="stop-color: rgba(63, 63, 70, 0.03)" />
+			<stop offset="0%" style="stop-color: rgba(82, 82, 91, 0.05)" />
+			<stop offset="100%" style="stop-color: rgba(63, 63, 70, 0.02)" />
 		</linearGradient>
 
 		<filter id="blob-blur">
-			<feGaussianBlur in="SourceGraphic" stdDeviation="20" />
+			<feGaussianBlur in="SourceGraphic" stdDeviation="15" />
 		</filter>
 	</defs>
 
