@@ -3,6 +3,7 @@ export interface Project {
 	description: string;
 	description2: string;
 	image: string;
+	cover?: string;
 	tags: string[];
 	projectImage1?: string;
 	projectImage2?: string;

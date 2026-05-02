@@ -429,32 +429,39 @@
 
 	const projects = [
 		{
-			name: 'Mint Park',
-			description: 'NFT marketplace on Bitcoin L2 with no-code minting tools for creators.',
-			image: '/Mintpark.png',
-			tags: ['Cross-Chain', 'CaaS', 'Creator Tools'],
-			href: '/projects/mintpark'
+			name: 'Goodwine',
+			description: 'Premium wine e-commerce mobile app — secure auth, Qpay checkout, real-time order tracking.',
+			image: '/projects/goodwine-cover.png',
+			tags: ['Mobile E-commerce', 'React Native', 'Qpay'],
+			href: '/projects/goodwine'
 		},
 		{
-			name: 'Lumi',
-			description: 'Capture and share culinary adventures with ephemeral 72-hour moments.',
-			image: '/Lumi.png',
-			tags: ['Mobile App', 'Social Platform'],
-			href: '/projects/lumi'
+			name: 'Amuse-Bouche',
+			description: 'QR-driven loyalty app for restaurant groups — multi-brand memberships, fiat + Bitcoin balances.',
+			image: '/projects/amuse-cover.png',
+			tags: ['Loyalty', 'QR Check-in', 'React Native'],
+			href: '/projects/amuse'
 		},
 		{
-			name: 'Satoshi Punks',
-			description: 'Trailblazing Bitcoin NFT collection from rare sub-100k Ordinals.',
-			image: '/SatoshiPunks.webp',
-			tags: ['Ordinals', 'NFT Collection'],
-			href: '/projects/satoshipunks'
+			name: 'GoodWine Web',
+			description: 'Full Next.js commerce platform — branded storefront, customer accounts, admin dashboard.',
+			image: '/projects/goodwine-cover.png',
+			tags: ['Web E-commerce', 'Next.js', 'tRPC'],
+			href: '/projects/wine'
 		},
 		{
-			name: 'Shapetown',
-			description: 'Interactive 3D world builder for creative expression and collaboration.',
-			image: '/ShapeTown.png',
-			tags: ['Web3', '3D', 'Creator Tools'],
-			href: '/projects/shapetown'
+			name: 'Nair',
+			description: "Mongolia's first end-to-end celebration platform — venues, vendors, and bookings.",
+			image: '/projects/nair-cover.png',
+			tags: ['Marketplace', 'SvelteKit', 'i18n'],
+			href: '/projects/nair'
+		},
+		{
+			name: 'CMM MarketIQ',
+			description: 'B2B intelligence platform for capital markets — editorial CMS, deal flow, insights.',
+			image: '/projects/cmm-cover.png',
+			tags: ['B2B Platform', 'Editorial CMS', 'Next.js'],
+			href: '/projects/cmm'
 		}
 	];
 
